@@ -1,10 +1,10 @@
+// src/routes/auth.routes.js
 import { Router } from "express";
-const router= Router();
+import * as authCtrl from "../controllers/auth.controller.js"; // Añade la extensión .js
 
-import *as authCtrl from "../controllers/auth.controller"
+const router = Router();
 
-router.post("/singin", authCtrl.singin)
-router.post("/singup",authCtrl.singUp)
-router.put("/updateAdmin",authCtrl.updateAdmin)
+router.post('/signup', authCtrl.singUp);
+router.post('/signin', authCtrl.singin);
 
 export default router;

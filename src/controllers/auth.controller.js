@@ -1,6 +1,6 @@
-import User from "../models/User";
+import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import Role from "../models/Role";
+import Role from "../models/Role.js";
 
 
 export const validatePassword = async (req, res) => {
@@ -17,7 +17,6 @@ export const validatePassword = async (req, res) => {
         res.status(500).json({ message: "Hubo un error.", error: error });
     }
 };
-
 
 export const updateAdmin = async (req, res) => {
     const { oldUsername, newUsername, newPassword } = req.body;
@@ -56,30 +55,37 @@ export const singin = async (req, res) => {
 };
 
 export const singUp = async (req, res) => {
-    const { username, email, password, roles } = req.body;
-
+    const { username, email, password, id_dispositivos, id, key, roles } = req.body;
     try {
-
+        // Crear un nuevo objeto User
         const newUser = new User({
             username,
             email,
-            password: await User.encryptPassword(password)
+            password: await User.encryptPassword(password),
+            id_dispositivos,
+            id,
+            key,
+            // Aquí puedes asignar un rol por defecto si no se envían roles
+            roles: [] // Inicializar roles como un array vacío
         });
 
+        // Asignar roles si se envían
         if (roles) {
             const foundRoles = await Role.find({ name: { $in: roles } });
-            newUser.roles = foundRoles.map(role => role._id);
+            newUser.roles = foundRoles.map(role => role._id); // Asignar los roles encontrados
         } else {
+            // Si no se envían roles, asignar el rol por defecto
             const role = await Role.findOne({ name: "User" });
-            newUser.roles = [role._id];
+            newUser.roles = [role._id]; // Asignar rol por defecto
         }
 
+        // Guardar el nuevo usuario en la base de datos
         const savedUser = await newUser.save();
+        console.log("Nuevo usuario creado:", savedUser);
         res.status(200).json({ user: savedUser });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error al crear el usuario" });
     }
 };
-
 

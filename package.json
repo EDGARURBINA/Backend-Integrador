@@ -1,13 +1,13 @@
 {
   "name": "backend",
+  "type": "module",
   "version": "1.0.0",
-  "main": "App.js",
- "scripts": {
-  "build": "babel src --out-dir build",
-  "dev": "nodemon src/App.js --exec babel-node",
-  "start": "node build/App.js",
-  "test": "echo \"Error: no test specified\" "
-},
+  "main": "index.js",  
+  "scripts": {
+    "build": "babel src --out-dir build",
+    "dev": "nodemon src/index.js",  
+    "start": "node build/index.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

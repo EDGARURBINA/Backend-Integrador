@@ -1,9 +1,13 @@
 import  { Schema, model } from "mongoose";
 import bcrypt from 'bcryptjs';
-
+  
 const userSchema = new Schema({
 
     username:{
+        type: String,
+        required: true,
+    },
+    id_dispositivos:{
         type: String,
         required: true,
     },
@@ -13,22 +17,21 @@ const userSchema = new Schema({
         unique: true
     },
     id:{
-        type: ObjectId,
+        type: String,
         required: true
     },
     password:{
         type: String,
         required: true,
     },
-    role:{
+    key:{
         type: String,
+        required: true,
     },
-    createdAt:{
-        type:Date,
-    },
-    updatedA:{
-        type:Date,
-    }
+    roles: [{
+        type: Schema.Types.ObjectId, 
+        ref: 'Role', 
+    }]
 })
 
 userSchema.statics.encryptPassword = async (password) => { 
