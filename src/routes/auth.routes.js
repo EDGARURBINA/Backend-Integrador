@@ -1,6 +1,5 @@
-// src/routes/auth.routes.js
 import { Router } from "express";
-import * as authCtrl from "../controllers/auth.controller.js"; // Añade la extensión .js
+import * as authCtrl from "../controllers/auth.controller.js"; 
 
 const router = Router();
 
