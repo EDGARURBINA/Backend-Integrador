@@ -14,7 +14,7 @@ import temperatureRoutes from "./routes/temperature.routes.js"
 const app = express();
 const server = http.createServer(app);
 
-// Configuración de CORS
+
 app.use(cors({
     origin: ["http://localhost:5500", "http://127.0.0.1:5500"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -22,7 +22,7 @@ app.use(cors({
     credentials: true
 }));
 
-// Configuración de RabbitMQ
+
 const rabbitSettings = {
     protocol: 'amqp',
     hostname: '54.163.129.164',
@@ -112,7 +112,7 @@ async function setupRabbitMQ() {
     }
 }
 
-// Configuración de Socket.IO
+
 io.on("connection", (socket) => {
     console.log(`Cliente conectado - ID: ${socket.id}`);
     connectedClients.set(socket.id, {
@@ -187,7 +187,7 @@ setInterval(() => {
     });
 }, 60000);
 
-// Iniciar RabbitMQ
+
 (async () => {
     try {
         await setupRabbitMQ();
@@ -197,7 +197,7 @@ setInterval(() => {
     }
 })();
 
-// Resto de la configuración
+
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);

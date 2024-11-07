@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/Deshidratadordb")
+console.log(process.env.MONGODB_URI);
+
+mongoose.connect(process.env.MONGODB_URI )
   .then(() => console.log('Conectado a MongoDB'))
   .catch(error => console.error('Error de conexión a MongoDB:', error));
 

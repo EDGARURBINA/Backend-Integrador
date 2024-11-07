@@ -67,20 +67,20 @@
             }
         }
 
-        // Evento de conexión exitosa
+       
         socket.on('connect', () => {
             console.log('Conectado al servidor Socket.IO');
             updateStatus('Estado: Conectado', 'connected');
             reconnectInfo.textContent = '';
         });
 
-        // Escuchar mensajes MQTT
+        
         socket.on('mqtt-message', (data) => {
             console.log('Mensaje MQTT recibido:', data);
             addMessage(`MQTT: ${JSON.stringify(data.data)}`, 'mqtt');
         });
 
-        // Eventos de reconexión y manejo de errores (resto del código del cliente anterior)
+       
         socket.on('reconnect_attempt', (attemptNumber) => {
             updateStatus('Estado: Intentando reconectar...', 'reconnecting');
             reconnectInfo.textContent = `Intento de reconexión ${attemptNumber}/5`;

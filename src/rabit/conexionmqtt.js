@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 
 const rabbitSettings = {
     protocol: 'amqp',
-    hostname: '54.163.129.164',  // Sin 'http://'
+    hostname: '54.163.129.164', 
     port: 5672,
     username: 'blocksolutions',
     password: 'leedpees'

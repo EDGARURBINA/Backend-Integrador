@@ -23,7 +23,7 @@ export const createTemperature = async (req, res) => {
 
 export const getTemperatures = async (req, res) => {
     try {
-        const temperatures = await Temperature.find();  // Obtiene todos los registros de temperatura
+        const temperatures = await Temperature.find();  
         res.status(200).json({ message: "Registros de temperatura obtenidos", data: temperatures });
     } catch (error) {
         console.error("Error al obtener los registros de temperatura:", error);
@@ -31,7 +31,7 @@ export const getTemperatures = async (req, res) => {
     }
 };
 
-// Eliminar un registro de temperatura por ID
+
 export const deleteTemperature = async (req, res) => {
     try {
         const { id } = req.params;
