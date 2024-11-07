@@ -1,4 +1,5 @@
 import Device from "../models/Device.js"
+import History from "../models/History.js"
 
 export const createDevice = async (req, res) => {
     try {
@@ -9,6 +10,7 @@ export const createDevice = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 
 export const updateDevice = async (req, res) => {
@@ -70,12 +72,13 @@ export const getDeviceById = async (req, res) => {
 };
 
 
-// Método específico para actualizar el estado on/off
+// Método específico para actualizar el estado on/off y registrar el historial
 export const updateDeviceStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { off_on } = req.body;
 
+        // Encuentra y actualiza el estado del dispositivo
         const updatedDevice = await Device.findByIdAndUpdate(
             id,
             { off_on },
@@ -84,6 +87,23 @@ export const updateDeviceStatus = async (req, res) => {
 
         if (!updatedDevice) {
             return res.status(404).json({ message: "Dispositivo no encontrado" });
+        }
+
+        // Si el dispositivo se apaga (off_on = false), registra un historial
+        if (off_on === false) {
+            const newHistory = new History({
+                id: updatedDevice.id,
+                temperatures: updatedDevice.temperatures,
+                humidities: updatedDevice.humidities,
+                weights: updatedDevice.weights,
+                fruit: updatedDevice.fruit,
+                automatic: updatedDevice.automatic,
+                hours: updatedDevice.hours,
+                minutes: updatedDevice.minutes,
+                date: new Date() // Guarda la fecha actual
+            });
+
+            await newHistory.save(); // Guarda el historial en la base de datos
         }
 
         res.json(updatedDevice);

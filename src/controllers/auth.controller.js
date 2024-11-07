@@ -53,8 +53,9 @@ export const singin = async (req, res) => {
     }
 };
 
-export const singUp = async (req, res) => {
+export const signUp = async (req, res) => {
     const { username, email, password, id_dispositivos, id, key, roles } = req.body;
+
     try {
         // Crear un nuevo objeto User
         const newUser = new User({
@@ -64,23 +65,29 @@ export const singUp = async (req, res) => {
             id_dispositivos,
             id,
             key,
-            // Aquí puedes asignar un rol por defecto si no se envían roles
-            roles: [] 
+            roles: [] // Rol vacío por defecto
         });
 
-      
-        if (roles) {
+        // Asignación de roles
+        if (roles && roles.length > 0) {
+            // Busca los roles especificados en la solicitud
             const foundRoles = await Role.find({ name: { $in: roles } });
-            newUser.roles = foundRoles.map(role => role._id); 
-            const role = await Role.findOne({ name: "User" });
-            newUser.roles = [role._id];
+            newUser.roles = foundRoles.map(role => role._id);
+        } else {
+            // Si no se especifican roles, asigna el rol predeterminado "User"
+            const defaultRole = await Role.findOne({ name: "User" });
+            if (defaultRole) {
+                newUser.roles = [defaultRole._id];
+            }
         }
+
+        // Guarda el usuario en la base de datos
         const savedUser = await newUser.save();
+
         console.log("Nuevo usuario creado:", savedUser);
         res.status(200).json({ user: savedUser });
     } catch (error) {
-        console.error(error);
+        console.error("Error en signUp:", error);
         res.status(500).json({ message: "Error al crear el usuario" });
     }
 };
-

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket con MQTT</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .reconnecting { background-color: #fff3cd; color: #856404; }
+        .mqtt-message { background-color: #e2e3e5; color: #383d41; padding: 10px; margin: 5px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Conexión WebSocket con MQTT</h1>
+    <div id="status" class="status"></div>
+    <div id="reconnectInfo"></div>
+    <h2>Mensajes MQTT</h2>
+    <div id="mqttMessages"></div>
+    <h2>Mensajes WebSocket</h2>
+    <div id="messages"></div>
+
+    <script>
+        const socket = io('http://localhost:3000', {
+            withCredentials: true,
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            timeout: 20000,
+            autoConnect: true
+        });
+
+        const statusDiv = document.getElementById('status');
+        const reconnectInfo = document.getElementById('reconnectInfo');
+        const messagesDiv = document.getElementById('messages');
+        const mqttMessagesDiv = document.getElementById('mqttMessages');
+
+        function updateStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+        }
+
+        function addMessage(message, type = 'websocket') {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            
+            if (type === 'mqtt') {
+                messageElement.className = 'mqtt-message';
+                mqttMessagesDiv.appendChild(messageElement);
+            } else {
+                messagesDiv.appendChild(messageElement);
+            }
+            
+            // Mantener solo los últimos 50 mensajes
+            if (mqttMessagesDiv.children.length > 50) {
+                mqttMessagesDiv.removeChild(mqttMessagesDiv.firstChild);
+            }
+            if (messagesDiv.children.length > 50) {
+                messagesDiv.removeChild(messagesDiv.firstChild);
+            }
+        }
+
+        // Evento de conexión exitosa
+        socket.on('connect', () => {
+            console.log('Conectado al servidor Socket.IO');
+            updateStatus('Estado: Conectado', 'connected');
+            reconnectInfo.textContent = '';
+        });
+
+        // Escuchar mensajes MQTT
+        socket.on('mqtt-message', (data) => {
+            console.log('Mensaje MQTT recibido:', data);
+            addMessage(`MQTT: ${JSON.stringify(data.data)}`, 'mqtt');
+        });
+
+        // Eventos de reconexión y manejo de errores (resto del código del cliente anterior)
+        socket.on('reconnect_attempt', (attemptNumber) => {
+            updateStatus('Estado: Intentando reconectar...', 'reconnecting');
+            reconnectInfo.textContent = `Intento de reconexión ${attemptNumber}/5`;
+        });
+
+        socket.on('reconnect', (attemptNumber) => {
+            updateStatus('Estado: Reconectado', 'connected');
+            addMessage(`Reconectado después de ${attemptNumber} intentos`);
+        });
+
+        socket.on('disconnect', (reason) => {
+            updateStatus('Estado: Desconectado', 'disconnected');
+        });
+
+        socket.on('message', (data) => {
+            addMessage(`WebSocket: ${JSON.stringify(data)}`);
+        });
+    </script>
+</body>
+</html>
