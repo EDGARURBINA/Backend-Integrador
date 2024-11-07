@@ -27,8 +27,7 @@ class SocketManager {
 
       // Enviar mensaje inicial al cliente
       this.sendMessage(socket, {
-        msg: "Conectado al servidor",
-        id: socket.id,
+        msg: "Conectado al servidor"
       });
 
       // Monitorear actividad del cliente
