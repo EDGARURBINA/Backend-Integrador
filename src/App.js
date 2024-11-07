@@ -78,7 +78,7 @@ async function setupRabbitMQ() {
             date: new Date(),
             id_dispositivos: receivedMessage.device
           });
-          socketManager.sendMessage({
+          socketManager.sendMessage(socket, {
             temperature: receivedMessage.data.temperature,
             humidity: receivedMessage.data.humidity,
           })

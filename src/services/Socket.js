@@ -1,6 +1,9 @@
 import { Server } from "socket.io";
 
 class SocketManager {
+  io;
+  connectedClients;
+
   constructor(server) {
     this.io = new Server(server, {
       cors: {
@@ -14,7 +17,7 @@ class SocketManager {
   initialize() {
     this.io.on("connection", (socket) => {
       console.log(`Cliente conectado - ID: ${socket.id}`);
-      this.socket = socket;
+
       // Registrar cliente en el mapa
       this.connectedClients.set(socket.id, {
         connectionTime: new Date(),
@@ -23,7 +26,7 @@ class SocketManager {
       });
 
       // Enviar mensaje inicial al cliente
-      this.sendMessage({
+      this.sendMessage(socket, {
         msg: "Conectado al servidor",
         id: socket.id,
       });
@@ -36,26 +39,26 @@ class SocketManager {
     });
   }
 
-  sendMessage( message) {
-    this.socket.emit("message", message);
+  sendMessage(socket, message) {
+    socket.emit("message", message);
   }
 
-  handleClientMessage( data) {
-    console.log(`Mensaje recibido de ${this.socket.id}:`, data);
+  handleClientMessage(socket, data) {
+    console.log(`Mensaje recibido de ${socket.id}:`, data);
 
-    if (this.connectedClients.has(this.socket.id)) {
-      this.connectedClients.get(this.socket.id).lastActivity = new Date();
+    if (this.connectedClients.has(socket.id)) {
+      this.connectedClients.get(socket.id).lastActivity = new Date();
     }
 
-    this.sendMessage({
+    this.sendMessage(socket, {
       msg: "Mensaje recibido correctamente",
       timestamp: new Date(),
     });
   }
 
-  handleDisconnect() {
-    console.log(`Cliente desconectado - ID: ${this.socket.id}`);
-    this.connectedClients.delete(this.socket.id);
+  handleDisconnect(socket) {
+    console.log(`Cliente desconectado - ID: ${socket.id}`);
+    this.connectedClients.delete(socket.id);
   }
 }
 
