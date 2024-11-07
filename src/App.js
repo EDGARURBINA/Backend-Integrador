@@ -30,6 +30,9 @@ const rabbitSettings = {
 };
 const queue = 'conection';
 
+// Instancia de SocketManager
+const socketManager = new SocketManager(server);
+
 // Inicializar RabbitMQ, SocketManager y la configuración inicial
 (async () => {
   try {
@@ -40,8 +43,6 @@ const queue = 'conection';
     console.error("Error al inicializar:", error);
   }
 })();
-// Instancia de SocketManager
-const socketManager = new SocketManager(server);
 
 // Función para iniciar RabbitMQ
 async function setupRabbitMQ() {
@@ -78,18 +79,13 @@ async function setupRabbitMQ() {
             date: new Date(),
             id_dispositivos: receivedMessage.device
           });
-          socketManager.io.emit('message', {
-            temperature: receivedMessage.data.temperature,
-            humidity: receivedMessage.data.humidity,
-          })
           await newTemperature.save();
           console.log("Registro de temperatura guardado en la base de datos.");
 
           // Emitir el mensaje a todos los clientes conectados
-          socketManager.io.emit('mqtt-message', {
-            type: 'mqtt',
-            data: receivedMessage,
-            timestamp: new Date()
+          socketManager.io.emit('message', {
+            temperature: receivedMessage.data.temperature,
+            humidity: receivedMessage.data.humidity
           });
 
           // Confirmar el mensaje
