@@ -23,19 +23,11 @@
     <div id="reconnectInfo"></div>
     <h2>Mensajes MQTT</h2>
     <div id="mqttMessages"></div>
-    <h2>Mensajes WebSocket</h2>
+    <h2> WebSocket</h2>
     <div id="messages"></div>
 
     <script>
-        const socket = io('http://localhost:3000', {
-            withCredentials: true,
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            reconnectionDelayMax: 5000,
-            timeout: 20000,
-            autoConnect: true
-        });
+        const socket = io('http://localhost:3000');
 
         const statusDiv = document.getElementById('status');
         const reconnectInfo = document.getElementById('reconnectInfo');
@@ -47,7 +39,7 @@
             statusDiv.className = 'status ' + type;
         }
 
-        function addMessage(message, type = 'websocket') {
+        /*function addMessage(message, type = 'websocket') {
             const messageElement = document.createElement('div');
             messageElement.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
             
@@ -65,7 +57,7 @@
             if (messagesDiv.children.length > 50) {
                 messagesDiv.removeChild(messagesDiv.firstChild);
             }
-        }
+        }*/
 
        
         socket.on('connect', () => {
