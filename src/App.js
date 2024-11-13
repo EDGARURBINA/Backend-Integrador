@@ -14,13 +14,13 @@ import SocketManager from "./services/Socket.js";
 const app = express();
 const server = http.createServer(app);
 
-// Configuración de CORS
+
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST"]
 }));
 
-// Configuración de RabbitMQ
+
 const rabbitSettings = {
   protocol: 'amqp',
   hostname: '54.163.129.164',
@@ -30,21 +30,21 @@ const rabbitSettings = {
 };
 const queue = 'conection';
 
-// Instancia de SocketManager
+
 const socketManager = new SocketManager(server);
 
-// Inicializar RabbitMQ, SocketManager y la configuración inicial
+
 (async () => {
   try {
     await setupRabbitMQ();
     await createRoles();
-    socketManager.initialize();  // Inicializa el manejador de sockets
+    socketManager.initialize();  
   } catch (error) {
     console.error("Error al inicializar:", error);
   }
 })();
 
-// Función para iniciar RabbitMQ
+
 async function setupRabbitMQ() {
   try {
     const connection = await amqp.connect(rabbitSettings);
@@ -82,13 +82,13 @@ async function setupRabbitMQ() {
           await newTemperature.save();
           console.log("Registro de temperatura guardado en la base de datos.");
 
-          // Emitir el mensaje a todos los clientes conectados
+          
           socketManager.io.emit('message', {
             temperature: receivedMessage.data.temperature,
             humidity: receivedMessage.data.humidity
           });
 
-          // Confirmar el mensaje
+          
           channel.ack(message);
         } catch (error) {
           console.error('Error al procesar mensaje MQTT:', error);
@@ -105,7 +105,6 @@ async function setupRabbitMQ() {
 }
 
 
-// Rutas de la API
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);

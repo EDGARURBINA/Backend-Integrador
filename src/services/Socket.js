@@ -7,7 +7,7 @@ class SocketManager {
   constructor(server) {
     this.io = new Server(server, {
       cors: {
-        origin: "*", // Cambia esto según tu frontend
+        origin: "*", 
         methods: ["GET", "POST"],
       },
     });
@@ -25,15 +25,12 @@ class SocketManager {
         reconnections: 0,
       });
 
-      // Enviar mensaje inicial al cliente
+      
       this.sendMessage(socket, {
         msg: "Conectado al servidor"
       });
 
-      // Monitorear actividad del cliente
       socket.on("message", (data) => this.handleClientMessage(socket, data));
-
-      // Manejar desconexión
       socket.on("disconnect", () => this.handleDisconnect(socket));
     });
   }
@@ -47,6 +44,7 @@ class SocketManager {
 
     if (this.connectedClients.has(socket.id)) {
       this.connectedClients.get(socket.id).lastActivity = new Date();
+
     }
 
     this.sendMessage(socket, {

@@ -13,7 +13,7 @@ const deviceSchema = new Schema ({
         type:Boolean
 
     } ,
-    temperature:{
+    temperatures:{
         type: Number
     } ,
     pre_set:{

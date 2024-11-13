@@ -8,11 +8,11 @@ const rabbitSettings = {
     password: 'leedpees'
 };
 
-const queue = 'conection';  // Nombre de la cola
+const queue = 'conection';  
 
 async function receiveMessage() {
     try {
-        // Conectar a RabbitMQ
+       
         const connection = await amqp.connect(rabbitSettings);
         console.log('Conectado a RabbitMQ');
 
@@ -20,7 +20,7 @@ async function receiveMessage() {
         const channel = await connection.createChannel();
         console.log('Canal creado');
 
-        // Asegurarse de que la cola exista
+        
         await channel.assertQueue(queue, { durable: true });
         console.log("Escuchando la cola ${queue}");
 
@@ -31,7 +31,6 @@ async function receiveMessage() {
                 const receivedMessage = JSON.parse(message.content.toString());
                 console.log('Mensaje recibido:', receivedMessage);
                 
-                // Acknowledge el mensaje (confirmamos que fue recibido y procesado)
                 channel.ack(message);
             }
         });
@@ -41,5 +40,5 @@ async function receiveMessage() {
     }
 }
 
-// Llamar a la función para recibir el mensaje
+
 receiveMessage();

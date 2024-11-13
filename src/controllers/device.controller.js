@@ -12,7 +12,6 @@ export const createDevice = async (req, res) => {
 };
 
 
-
 export const updateDevice = async (req, res) => {
     try {
         const { id } = req.params;
@@ -72,7 +71,6 @@ export const getDeviceById = async (req, res) => {
 };
 
 
-// Método específico para actualizar el estado on/off y registrar el historial
 export const updateDeviceStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -100,10 +98,10 @@ export const updateDeviceStatus = async (req, res) => {
                 automatic: updatedDevice.automatic,
                 hours: updatedDevice.hours,
                 minutes: updatedDevice.minutes,
-                date: new Date() // Guarda la fecha actual
+                date: new Date() 
             });
 
-            await newHistory.save(); // Guarda el historial en la base de datos
+            await newHistory.save(); 
         }
 
         res.json(updatedDevice);

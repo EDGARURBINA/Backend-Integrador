@@ -1,6 +1,8 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import Role from "../models/Role.js";
+import config from "../config.js"
+
 
 export const validatePassword = async (req, res) => {
     const { password } = req.body;
@@ -53,11 +55,12 @@ export const singin = async (req, res) => {
     }
 };
 
+
 export const signUp = async (req, res) => {
     const { username, email, password, id_dispositivos, id, key, roles } = req.body;
 
     try {
-        // Crear un nuevo objeto User
+        // Creación del nuevo usuario
         const newUser = new User({
             username,
             email,
@@ -65,27 +68,33 @@ export const signUp = async (req, res) => {
             id_dispositivos,
             id,
             key,
-            roles: [] // Rol vacío por defecto
+            roles: []  // Inicializamos roles como un arreglo vacío
         });
 
-        // Asignación de roles
+        // Si roles es proporcionado, buscar los roles en la base de datos
         if (roles && roles.length > 0) {
-            // Busca los roles especificados en la solicitud
             const foundRoles = await Role.find({ name: { $in: roles } });
+
+            // Verificar si se encontraron todos los roles
+            if (foundRoles.length !== roles.length) {
+                return res.status(400).json({ message: "Uno o más roles no existen." });
+            }
+
+            // Asignar los roles encontrados al nuevo usuario
             newUser.roles = foundRoles.map(role => role._id);
         } else {
-            // Si no se especifican roles, asigna el rol predeterminado "User"
+            // Si no se pasa ningún rol, asignar el rol por defecto 'User'
             const defaultRole = await Role.findOne({ name: "User" });
             if (defaultRole) {
                 newUser.roles = [defaultRole._id];
             }
         }
 
-        // Guarda el usuario en la base de datos
+        // Guardar el nuevo usuario
         const savedUser = await newUser.save();
+        res.status(200).json({ user: savedUser });
 
         console.log("Nuevo usuario creado:", savedUser);
-        res.status(200).json({ user: savedUser });
     } catch (error) {
         console.error("Error en signUp:", error);
         res.status(500).json({ message: "Error al crear el usuario" });
