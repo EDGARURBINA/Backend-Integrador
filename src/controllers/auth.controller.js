@@ -68,10 +68,10 @@ export const signUp = async (req, res) => {
             id_dispositivos,
             id,
             key,
-            roles: []  // Inicializamos roles como un arreglo vacío
+            roles: []  
         });
 
-        // Si roles es proporcionado, buscar los roles en la base de datos
+        
         if (roles && roles.length > 0) {
             const foundRoles = await Role.find({ name: { $in: roles } });
 
@@ -80,17 +80,15 @@ export const signUp = async (req, res) => {
                 return res.status(400).json({ message: "Uno o más roles no existen." });
             }
 
-            // Asignar los roles encontrados al nuevo usuario
             newUser.roles = foundRoles.map(role => role._id);
         } else {
-            // Si no se pasa ningún rol, asignar el rol por defecto 'User'
+        
             const defaultRole = await Role.findOne({ name: "User" });
             if (defaultRole) {
                 newUser.roles = [defaultRole._id];
             }
         }
 
-        // Guardar el nuevo usuario
         const savedUser = await newUser.save();
         res.status(200).json({ user: savedUser });
 

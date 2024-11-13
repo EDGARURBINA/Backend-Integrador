@@ -1,13 +1,10 @@
 import { Server } from "socket.io";
 
 class SocketManager {
-  io;
-  connectedClients;
-
   constructor(server) {
     this.io = new Server(server, {
       cors: {
-        origin: "*", 
+        origin: "*",
         methods: ["GET", "POST"],
       },
     });
@@ -18,14 +15,12 @@ class SocketManager {
     this.io.on("connection", (socket) => {
       console.log(`Cliente conectado - ID: ${socket.id}`);
 
-      // Registrar cliente en el mapa
       this.connectedClients.set(socket.id, {
         connectionTime: new Date(),
         lastActivity: new Date(),
         reconnections: 0,
       });
 
-      
       this.sendMessage(socket, {
         msg: "Conectado al servidor"
       });
@@ -33,6 +28,11 @@ class SocketManager {
       socket.on("message", (data) => this.handleClientMessage(socket, data));
       socket.on("disconnect", () => this.handleDisconnect(socket));
     });
+  }
+
+  
+  broadcast(event, data) {
+    this.io.emit(event, data);
   }
 
   sendMessage(socket, message) {
@@ -44,7 +44,6 @@ class SocketManager {
 
     if (this.connectedClients.has(socket.id)) {
       this.connectedClients.get(socket.id).lastActivity = new Date();
-
     }
 
     this.sendMessage(socket, {

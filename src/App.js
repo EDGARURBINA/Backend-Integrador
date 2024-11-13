@@ -1,115 +1,58 @@
 import express from "express";
 import morgan from "morgan";
-import { createRoles } from "./libs/inicialSetup.js";
 import cors from 'cors';
 import http from "http";
-import amqp from 'amqplib';
 import authRoutes from "./routes/auth.routes.js";
 import deviceRoutes from "./routes/device.routes.js";
 import pre_setRoutes from "./routes/pre_set.routes.js";
 import temperatureRoutes from "./routes/temperature.routes.js";
-import Temperature from "./models/Temperature.js";
 import SocketManager from "./services/Socket.js";
+import MqttService from "./services/mqtt.service.js";
 
-const app = express();
-const server = http.createServer(app);
-
-
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST"]
-}));
-
-
-const rabbitSettings = {
-  protocol: 'amqp',
-  hostname: '54.163.129.164',
-  port: 5672,
-  username: 'blocksolutions',
-  password: 'leedpees'
-};
-const queue = 'conection';
-
-
-const socketManager = new SocketManager(server);
-
-
-(async () => {
-  try {
-    await setupRabbitMQ();
-    await createRoles();
-    socketManager.initialize();  
-  } catch (error) {
-    console.error("Error al inicializar:", error);
+class App {
+  constructor() {
+    this.app = express();
+    this.server = http.createServer(this.app);
+    this.socketManager = new SocketManager(this.server);
+    this.mqttService = null;
+    this.setupMiddlewares();
+    this.setupRoutes();
   }
-})();
 
+  setupMiddlewares() {
+    this.app.use(cors({
+      origin: "*",
+      methods: ["GET", "POST"]
+    }));
+    this.app.use(express.json());
+    this.app.use(morgan("dev"));
+  }
 
-async function setupRabbitMQ() {
-  try {
-    const connection = await amqp.connect(rabbitSettings);
-    console.log('Conectado a RabbitMQ');
+  setupRoutes() {
+    this.app.use("/api/auth", authRoutes);
+    this.app.use("/api/devices", deviceRoutes);
+    this.app.use("/api/pre_sets", pre_setRoutes);
+    this.app.use("/api/temperatures", temperatureRoutes);
+  }
 
-    connection.on('error', (err) => {
-      console.error('Error en la conexión RabbitMQ:', err);
-      setTimeout(setupRabbitMQ, 5000);
-    });
+  async initialize() {
+    try {
+      // Inicializar Socket.IO
+      this.socketManager.initialize();
 
-    connection.on('close', () => {
-      console.log('Conexión RabbitMQ cerrada. Reintentando...');
-      setTimeout(setupRabbitMQ, 5000);
-    });
+      // Inicializar servicio MQTT
+      this.mqttService = new MqttService(this.socketManager);
+      await this.mqttService.connect();
 
-    const channel = await connection.createChannel();
-    console.log('Canal RabbitMQ creado');
-
-    await channel.assertQueue(queue, { durable: true });
-    console.log(`Escuchando la cola ${queue}`);
-
-    channel.consume(queue, async (message) => {
-      if (message) {
-        try {
-          const receivedMessage = JSON.parse(message.content.toString());
-          console.log('Mensaje MQTT recibido:', receivedMessage);
-
-          // Guardar en la base de datos
-          const newTemperature = new Temperature({
-            temperature: receivedMessage.data.temperature,
-            humidity: receivedMessage.data.humidity,
-            date: new Date(),
-            id_dispositivos: receivedMessage.device
-          });
-          await newTemperature.save();
-          console.log("Registro de temperatura guardado en la base de datos.");
-
-          
-          socketManager.io.emit('message', {
-            temperature: receivedMessage.data.temperature,
-            humidity: receivedMessage.data.humidity
-          });
-
-          
-          channel.ack(message);
-        } catch (error) {
-          console.error('Error al procesar mensaje MQTT:', error);
-          channel.ack(message);
-        }
-      }
-    });
-
-    return { connection, channel };
-  } catch (error) {
-    console.error('Error al configurar RabbitMQ:', error);
-    setTimeout(setupRabbitMQ, 5000);
+      console.log('Aplicación inicializada correctamente');
+    } catch (error) {
+      console.error("Error al inicializar la aplicación:", error);
+      process.exit(1);
+    }
   }
 }
+const app = new App();
 
+await app.initialize();
 
-app.use(express.json());
-app.use(morgan("dev"));
-app.use("/api/auth", authRoutes);
-app.use("/api/devices", deviceRoutes);
-app.use("/api/pre_sets", pre_setRoutes);
-app.use("/api/temperatures", temperatureRoutes);
-
-export default server;
+export default app.server;
