@@ -79,18 +79,21 @@ class MqttService {
       // Procesar las alertas si existen
       if (alerts.length > 0) {
         for (const alert of alerts) {
-          if (!alert || !alert.id) {
+          if (!alert) {
             console.warn('Alerta inválida encontrada, saltando:', alert);
             continue;
           }
   
+          // Generar un id único si no existe
+          const alertId = alert.id || `${alert.type}-${new Date().getTime()}`;
+          
           try {
-            const existingAlert = await Alert.findOne({ id: alert.id });
+            const existingAlert = await Alert.findOne({ id: alertId });
             if (existingAlert) {
               alertIds.push(existingAlert._id);
             } else {
               const newAlert = new Alert({
-                id: alert.id,
+                id: alertId, // Usamos un id generado si no existe
                 description: alert.description || '',
                 priority: alert.priority || 'low',
                 date: alert.date || new Date()
