@@ -69,8 +69,8 @@ class MqttService {
 
   broadcastTemperature(message) {
     this.socketManager.broadcast('temperature-update', {
-      temperature: message.data.temperature,
-      humidity: message.data.humidity
+      temperature: message.temperature,
+      humidity: message.humidity
     });
   }
 
