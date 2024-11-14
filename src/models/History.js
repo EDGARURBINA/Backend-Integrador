@@ -4,7 +4,7 @@ const historySchema = new Schema ({
 
     id:{
         type: String,
-        required:true
+    
     },
     temperatures: [{
         type: Number
