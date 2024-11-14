@@ -59,26 +59,15 @@ class SocketManager {
     });
   }
 
-  
   emitPowerControl(action) {
     console.log(`Comando de encendido/apagado emitido desde el servidor: ${action}`);
-
-    
-    this.io.emit("power-control", {
-      action: action === "on", // Si es "on", se envía true, si no, false
-    });
+    this.io.emit("power-control", { action: action === "on" });
   }
 
   handleTogglePower(socket, data) {
     console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
-
-    
     const action = data.action === "on" ? true : false;
-
-    // Emite el comando al cliente de la Raspberry Pi
-    this.io.emit("power-control", {
-      action: action,
-    });
+    this.io.emit("power-control", { action: action });
   }
 
   handleDisconnect(socket) {
