@@ -1,6 +1,7 @@
 import amqp from 'amqplib';
 import { mqttConfig } from '../config/mqtt.js';
 import History from "../models/History.js";
+import Alert from '../models/Alert.js';
 
 class MqttService {
   constructor(socketManager) {
@@ -47,10 +48,10 @@ class MqttService {
       const receivedMessage = JSON.parse(message.content.toString());
       console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage);
 
-      const { temperature, humidity } = receivedMessage;
+      const { temperature, humidity, alerts } = receivedMessage;
 
       if (queueType === 'history') {
-        await this.saveHistory(receivedMessage);
+        await this.saveHistory(receivedMessage, alerts); // Pasamos las alertas como parámetro
       } else if (queueType === 'real_dates') {
         await this.saveRealDates(receivedMessage);
       }
@@ -64,9 +65,24 @@ class MqttService {
     }
   }
 
-  async saveHistory(message) {
+  // Modificar saveHistory para manejar alertas como ObjectId
+  async saveHistory(message, alerts) {
     console.log("Guardando historial:", message);
     try {
+      // Primero, si las alertas no están en la base de datos, guardarlas
+      const alertIds = [];
+      for (let alert of alerts) {
+        const existingAlert = await Alert.findOne({ id: alert.id });
+        if (existingAlert) {
+          alertIds.push(existingAlert._id); // Si la alerta ya existe, usamos su _id
+        } else {
+          const newAlert = new Alert(alert); // Si la alerta no existe, crearla
+          const savedAlert = await newAlert.save();
+          alertIds.push(savedAlert._id); // Usamos el _id de la nueva alerta
+        }
+      }
+
+      // Ahora guardar el historial, referenciando las alertas
       const newHistory = new History({
         id: message.id,
         temperatures: message.temperatures,
@@ -76,19 +92,15 @@ class MqttService {
         automatic: message.automatic,
         hours: message.hours,
         minutes: message.minutes,
-        alerts: message.alerts, 
+        alerts: alertIds, // Referencias a las alertas
         date: new Date()
       });
+
       await newHistory.save();
       console.log("Historial guardado correctamente.");
     } catch (error) {
       console.error("Error al guardar historial:", error);
     }
-  }
-
-  async saveRealDates(message) {
-    console.log("Guardando fechas reales:", message);
-    // Aquí iría la lógica para guardar en la base de datos si es necesario
   }
 
   handleConnectionError(error) {

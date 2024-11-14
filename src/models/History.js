@@ -1,4 +1,5 @@
 import {Schema , model} from "mongoose";
+import Alert from "../models/Alert.js"
 
 const historySchema = new Schema ({
 
@@ -32,9 +33,10 @@ const historySchema = new Schema ({
         default: Date.now
     },
     alerts: [{
-        type: String,
-        required: true,
-    }],
+        type: Schema.Types.ObjectId,
+        ref: "Alert",  // Esto indica que 'alerts' es una referencia a documentos de 'Alert'
+      }],
+
 
 });
 
