@@ -7,7 +7,7 @@ const alertSchema = new Schema ({
         required:true
     },
 
-    desccription:{
+    description:{
         type: String,
         required:true
     },

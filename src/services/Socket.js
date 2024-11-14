@@ -25,14 +25,10 @@ class SocketManager {
         msg: "Conectado al servidor",
       });
 
-      // Escucha el evento `togglePower` desde el cliente
       socket.on("togglePower", (data) => this.handleTogglePower(socket, data));
-
       socket.on("message", (data) => this.handleClientMessage(socket, data));
       socket.on("disconnect", () => this.handleDisconnect(socket));
     });
-
-    
   }
 
   broadcast(event, data) {

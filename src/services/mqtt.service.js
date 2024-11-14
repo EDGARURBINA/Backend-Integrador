@@ -26,12 +26,9 @@ class MqttService {
   async setupChannel() {
     try {
       this.channel = await this.connection.createChannel();
-
-      // Aseguramos que ambas colas estén configuradas
       await this.channel.assertQueue(mqttConfig.queueHistory, { durable: true });
       await this.channel.assertQueue(mqttConfig.queueRealDates, { durable: true });
 
-      // Consumir mensajes de ambas colas
       this.channel.consume(mqttConfig.queueHistory, this.handleMessage.bind(this, 'history'), { noAck: false });
       this.channel.consume(mqttConfig.queueRealDates, this.handleMessage.bind(this, 'real_dates'), { noAck: false });
 
@@ -42,7 +39,6 @@ class MqttService {
     }
   }
 
-  // Esta función ahora maneja mensajes de ambas colas
   async handleMessage(queueType, message) {
     if (!message) return;
 
@@ -50,50 +46,48 @@ class MqttService {
       const receivedMessage = JSON.parse(message.content.toString());
       console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage);
 
+      const { temperature, humidity } = receivedMessage;
+
       if (queueType === 'history') {
         await this.saveHistory(receivedMessage);
       } else if (queueType === 'real_dates') {
         await this.saveRealDates(receivedMessage);
       }
-      
-      // Confirmamos que el mensaje fue procesado correctamente
+
+      // Enviar datos de temperatura y humedad al cliente
+      this.socketManager.broadcast('sensorData', { temperature, humidity });
       this.channel.ack(message);
     } catch (error) {
       console.error('Error al procesar mensaje:', error);
-      this.channel.ack(message); // Acknowledging even in case of error to prevent message loss
+      this.channel.ack(message);
     }
   }
 
-  // Guardar mensaje en la base de datos para la cola 'history'
   async saveHistory(message) {
-    // Aquí puedes implementar la lógica para guardar los datos de historial
     console.log("Guardando historial:", message);
-    // Ejemplo de cómo guardar en la base de datos
-    // const newHistory = new History({
-    //   id: message.id,
-    //   temperatures: message.temperatures,
-    //   humidities: message.humidities,
-    //   weights: message.weights,
-    //   fruit: message.fruit,
-    //   automatic: message.automatic,
-    //   hours: message.hours,
-    //   minutes: message.minutes,
-    //   alerts: message.alerts
-    // });
-    // await newHistory.save();
+    try {
+      const newHistory = new History({
+        id: message.id,
+        temperatures: message.temperatures,
+        humidities: message.humidities,
+        weights: message.weights,
+        fruit: message.fruit,
+        automatic: message.automatic,
+        hours: message.hours,
+        minutes: message.minutes,
+        alerts: message.alerts, 
+        date: new Date()
+      });
+      await newHistory.save();
+      console.log("Historial guardado correctamente.");
+    } catch (error) {
+      console.error("Error al guardar historial:", error);
+    }
   }
 
-  // Guardar mensaje en la base de datos para la cola 'real_dates'
   async saveRealDates(message) {
-    // Aquí puedes implementar la lógica para guardar los datos de fechas reales u otros datos
     console.log("Guardando fechas reales:", message);
-    // Ejemplo de cómo guardar en la base de datos
-    // const newRealDate = new RealDate({
-    //   id: message.id,
-    //   date: message.date,
-    //   otherFields: message.otherFields // Ajusta según tu esquema
-    // });
-    // await newRealDate.save();
+    // Aquí iría la lógica para guardar en la base de datos si es necesario
   }
 
   handleConnectionError(error) {
