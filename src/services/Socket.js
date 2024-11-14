@@ -22,7 +22,7 @@ class SocketManager {
       });
 
       this.sendMessage(socket, {
-        msg: "Conectado al servidor"
+        msg: "Conectado al servidor",
       });
 
       // Escucha el evento `togglePower` desde el cliente
@@ -32,10 +32,7 @@ class SocketManager {
       socket.on("disconnect", () => this.handleDisconnect(socket));
     });
 
-    // Aquí emito un evento manualmente (por ejemplo, después de 5 segundos)
-    setTimeout(() => {
-      this.emitPowerControl("on"); 
-    }, 5000); 
+    
   }
 
   broadcast(event, data) {
