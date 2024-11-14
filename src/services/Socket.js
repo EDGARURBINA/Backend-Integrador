@@ -25,16 +25,19 @@ class SocketManager {
         msg: "Conectado al servidor"
       });
 
-
       // Escucha el evento `togglePower` desde el cliente
       socket.on("togglePower", (data) => this.handleTogglePower(socket, data));
 
       socket.on("message", (data) => this.handleClientMessage(socket, data));
       socket.on("disconnect", () => this.handleDisconnect(socket));
     });
+
+    // Aquí emito un evento manualmente (por ejemplo, después de 5 segundos)
+    setTimeout(() => {
+      this.emitPowerControl("on"); 
+    }, 5000); 
   }
 
-  
   broadcast(event, data) {
     this.io.emit(event, data);
   }
@@ -56,13 +59,25 @@ class SocketManager {
     });
   }
 
-  // Nueva función para manejar `togglePower`
+  
+  emitPowerControl(action) {
+    console.log(`Comando de encendido/apagado emitido desde el servidor: ${action}`);
+
+    
+    this.io.emit("power-control", {
+      action: action === "on", // Si es "on", se envía true, si no, false
+    });
+  }
+
   handleTogglePower(socket, data) {
     console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
 
+    
+    const action = data.action === "on" ? true : false;
+
     // Emite el comando al cliente de la Raspberry Pi
     this.io.emit("power-control", {
-      action: data.action,  // Puede ser "on" o "off"
+      action: action,
     });
   }
 
