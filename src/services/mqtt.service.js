@@ -49,14 +49,13 @@ class MqttService {
       console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage); // Log del mensaje completo
   
       if (queueType === 'history') {
-        console.log("Detalles del mensaje para 'history':", receivedMessage); // Log específico para mensajes de 'history'
+        console.log("Detalles del mensaje para 'history':", receivedMessage);
         await this.saveHistory(receivedMessage);
       } else if (queueType === 'real_dates') {
-        console.log("Detalles del mensaje para 'real_dates':", receivedMessage); // Log específico para mensajes de 'real_dates'
+        console.log("Detalles del mensaje para 'real_dates':", receivedMessage);
         await this.saveRealDates(receivedMessage);
       }
   
-      // Enviar datos de temperatura y humedad al cliente
       const { temperature, humidity } = receivedMessage;
       this.socketManager.broadcast('sensorData', { temperature, humidity });
       this.channel.ack(message);
@@ -65,18 +64,16 @@ class MqttService {
       this.channel.ack(message);
     }
   }
-  
+
   async saveHistory(message) {
     console.log("Guardando historial:", message);
   
     try {
-      // Asegurarnos de que alertas sea un array
       const alerts = Array.isArray(message.alert) ? message.alert : [];
-      console.log("Procesando alertas:", alerts); // Ver las alertas recibidas
+      console.log("Procesando alertas:", alerts); 
   
       const alertIds = [];
   
-      // Procesar las alertas si existen
       if (alerts.length > 0) {
         for (const alert of alerts) {
           if (!alert) {
@@ -84,16 +81,14 @@ class MqttService {
             continue;
           }
   
-          // Generar un id único si no existe
           const alertId = alert.id || `${alert.type}-${new Date().getTime()}`;
-          
           try {
             const existingAlert = await Alert.findOne({ id: alertId });
             if (existingAlert) {
               alertIds.push(existingAlert._id);
             } else {
               const newAlert = new Alert({
-                id: alertId, // Usamos un id generado si no existe
+                id: alertId, 
                 description: alert.description || '',
                 priority: alert.priority || 'low',
                 date: alert.date || new Date()
@@ -106,8 +101,7 @@ class MqttService {
           }
         }
       }
-  
-      // Crear nuevo registro de historial
+
       const newHistory = new History({
         id: message.id,
         temperatures: Array.isArray(message.temperatures) ? message.temperatures : [],
@@ -117,12 +111,17 @@ class MqttService {
         automatic: Boolean(message.automatic),
         hours: Number(message.hours) || 0,
         minutes: Number(message.minutes) || 0,
-        alerts: alertIds, // Usar los IDs de las alertas en lugar de las alertas completas
+        alerts: alertIds, 
         date: new Date()
       });
   
       await newHistory.save();
       console.log("Historial guardado correctamente con", alertIds.length, "alertas");
+      
+      // Emitir evento 'device' al cliente
+      this.socketManager.broadcastDeviceUpdate(newHistory); 
+      console.log("Evento 'device' emitido a los clientes");
+      
     } catch (error) {
       console.error("Error al guardar historial:", error);
       throw error;

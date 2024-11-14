@@ -109,3 +109,24 @@ export const updateDeviceStatus = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+
+
+export const getDeviceHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Buscar el dispositivo por su ID
+        const device = await Device.findOne({ id: id });
+        if (!device) {
+            return res.status(404).json({ message: "Dispositivo no encontrado" });
+        }
+
+        // Buscar los historiales relacionados con el dispositivo usando el ID
+        const histories = await History.find({ id: device.id });
+        res.json(histories);
+    } catch (error) {
+        console.error("Error al obtener el historial del dispositivo:", error);
+        res.status(500).json({ message: error.message });
+    }
+};

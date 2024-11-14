@@ -10,6 +10,10 @@ router.get("/:id",deviceCtrl.getDeviceById)
 router.put("/:id",deviceCtrl.updateDevice)
 router.delete("/:id",deviceCtrl.deleteDevice)
 
+
+
+router.get("/:id/history", deviceCtrl.getDeviceHistory);
+
 export default router;
 
 

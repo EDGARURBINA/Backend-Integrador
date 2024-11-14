@@ -41,10 +41,10 @@ const deviceSchema = new Schema ({
     
     histories: [
         {
-            type: Object
-        }
-    ],
-
+          type: Schema.Types.ObjectId,
+          ref: "History",
+        },
+      ],
     pause:{
         type:Boolean,
  }
@@ -54,4 +54,3 @@ const deviceSchema = new Schema ({
  export default model ("Device",deviceSchema)
 
 
- //crear un evento de notificaciones 
