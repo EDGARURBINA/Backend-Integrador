@@ -43,17 +43,19 @@ class MqttService {
 
   async handleMessage(queueType, message) {
     if (!message) return;
-
+  
     try {
       const receivedMessage = JSON.parse(message.content.toString());
-      console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage);
-
+      console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage); // Log del mensaje completo
+  
       if (queueType === 'history') {
+        console.log("Detalles del mensaje para 'history':", receivedMessage); // Log específico para mensajes de 'history'
         await this.saveHistory(receivedMessage);
       } else if (queueType === 'real_dates') {
+        console.log("Detalles del mensaje para 'real_dates':", receivedMessage); // Log específico para mensajes de 'real_dates'
         await this.saveRealDates(receivedMessage);
       }
-
+  
       // Enviar datos de temperatura y humedad al cliente
       const { temperature, humidity } = receivedMessage;
       this.socketManager.broadcast('sensorData', { temperature, humidity });
@@ -63,14 +65,15 @@ class MqttService {
       this.channel.ack(message);
     }
   }
-
+  
   async saveHistory(message) {
     console.log("Guardando historial:", message);
+  
     try {
       // Asegurarnos de que alerts sea un array
       const alerts = Array.isArray(message.alerts) ? message.alerts : [];
-      console.log("Procesando alertas:", alerts);
-
+      console.log("Procesando alertas:", alerts); // Ver las alertas recibidas
+  
       const alertIds = [];
       
       // Procesar las alertas si existen
@@ -80,7 +83,7 @@ class MqttService {
             console.warn('Alerta inválida encontrada, saltando:', alert);
             continue;
           }
-
+  
           try {
             const existingAlert = await Alert.findOne({ id: alert.id });
             if (existingAlert) {
@@ -100,7 +103,7 @@ class MqttService {
           }
         }
       }
-
+  
       // Crear nuevo registro de historial
       const newHistory = new History({
         id: message.id,
@@ -114,7 +117,7 @@ class MqttService {
         alerts: alertIds, // Usar los IDs de las alertas en lugar de las alertas completas
         date: new Date()
       });
-
+  
       await newHistory.save();
       console.log("Historial guardado correctamente con", alertIds.length, "alertas");
     } catch (error) {
