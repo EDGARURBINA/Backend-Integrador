@@ -1,6 +1,5 @@
 import amqp from 'amqplib';
 import { mqttConfig } from '../config/mqtt.js';
-import Temperature from '../models/Temperature.js';
 
 class MqttService {
   constructor(socketManager) {
@@ -27,51 +26,74 @@ class MqttService {
   async setupChannel() {
     try {
       this.channel = await this.connection.createChannel();
-      await this.channel.assertQueue(mqttConfig.queue, { durable: true });
-      
-      this.channel.consume(mqttConfig.queue, this.handleMessage.bind(this));
-      console.log(`Escuchando la cola ${mqttConfig.queue}`);
+
+      // Aseguramos que ambas colas estén configuradas
+      await this.channel.assertQueue(mqttConfig.queueHistory, { durable: true });
+      await this.channel.assertQueue(mqttConfig.queueRealDates, { durable: true });
+
+      // Consumir mensajes de ambas colas
+      this.channel.consume(mqttConfig.queueHistory, this.handleMessage.bind(this, 'history'), { noAck: false });
+      this.channel.consume(mqttConfig.queueRealDates, this.handleMessage.bind(this, 'real_dates'), { noAck: false });
+
+      console.log(`Escuchando las colas ${mqttConfig.queueHistory} y ${mqttConfig.queueRealDates}`);
     } catch (error) {
       console.error('Error al configurar el canal:', error);
       throw error;
     }
   }
 
-  async handleMessage(message) {
+  // Esta función ahora maneja mensajes de ambas colas
+  async handleMessage(queueType, message) {
     if (!message) return;
 
     try {
       const receivedMessage = JSON.parse(message.content.toString());
-      console.log('Mensaje MQTT recibido:', receivedMessage);
+      console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage);
 
-      await this.saveTemperature(receivedMessage);
-      this.broadcastTemperature(receivedMessage);
+      if (queueType === 'history') {
+        await this.saveHistory(receivedMessage);
+      } else if (queueType === 'real_dates') {
+        await this.saveRealDates(receivedMessage);
+      }
       
+      // Confirmamos que el mensaje fue procesado correctamente
       this.channel.ack(message);
     } catch (error) {
       console.error('Error al procesar mensaje:', error);
-      this.channel.ack(message);
+      this.channel.ack(message); // Acknowledging even in case of error to prevent message loss
     }
   }
 
-  async saveTemperature(message) {
-    /*const newTemperature = new Temperature({
-      temperature: message.temperature,
-      humidity: message.humidity,
-      date: new Date(),
-      id_dispositivos: message.device
-    });
-    await newTemperature.save();
-    */console.log("Temperatura guardada en la base de datos");
-    console.log(message);
+  // Guardar mensaje en la base de datos para la cola 'history'
+  async saveHistory(message) {
+    // Aquí puedes implementar la lógica para guardar los datos de historial
+    console.log("Guardando historial:", message);
+    // Ejemplo de cómo guardar en la base de datos
+    // const newHistory = new History({
+    //   id: message.id,
+    //   temperatures: message.temperatures,
+    //   humidities: message.humidities,
+    //   weights: message.weights,
+    //   fruit: message.fruit,
+    //   automatic: message.automatic,
+    //   hours: message.hours,
+    //   minutes: message.minutes,
+    //   alerts: message.alerts
+    // });
+    // await newHistory.save();
   }
 
-
-  broadcastTemperature(message) {
-    /*this.socketManager.broadcast('temperature-update',{
-      temperature: message.temperature,
-      humidity: message.humidity
-    });*/
+  // Guardar mensaje en la base de datos para la cola 'real_dates'
+  async saveRealDates(message) {
+    // Aquí puedes implementar la lógica para guardar los datos de fechas reales u otros datos
+    console.log("Guardando fechas reales:", message);
+    // Ejemplo de cómo guardar en la base de datos
+    // const newRealDate = new RealDate({
+    //   id: message.id,
+    //   date: message.date,
+    //   otherFields: message.otherFields // Ajusta según tu esquema
+    // });
+    // await newRealDate.save();
   }
 
   handleConnectionError(error) {
