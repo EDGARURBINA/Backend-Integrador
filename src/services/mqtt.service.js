@@ -55,14 +55,15 @@ class MqttService {
   }
 
   async saveTemperature(message) {
-    const newTemperature = new Temperature({
+    /*const newTemperature = new Temperature({
       temperature: message.temperature,
       humidity: message.humidity,
       date: new Date(),
       id_dispositivos: message.device
     });
     await newTemperature.save();
-    console.log("Temperatura guardada en la base de datos");
+    */console.log("Temperatura guardada en la base de datos");
+    console.log(message);
   }
 
 
