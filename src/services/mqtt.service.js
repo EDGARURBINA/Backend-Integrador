@@ -70,12 +70,12 @@ class MqttService {
     console.log("Guardando historial:", message);
   
     try {
-      // Asegurarnos de que alerts sea un array
-      const alerts = Array.isArray(message.alerts) ? message.alerts : [];
+      // Asegurarnos de que alertas sea un array
+      const alerts = Array.isArray(message.alert) ? message.alert : [];
       console.log("Procesando alertas:", alerts); // Ver las alertas recibidas
   
       const alertIds = [];
-      
+  
       // Procesar las alertas si existen
       if (alerts.length > 0) {
         for (const alert of alerts) {
