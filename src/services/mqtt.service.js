@@ -92,7 +92,7 @@ class MqttService {
         automatic: message.automatic,
         hours: message.hours,
         minutes: message.minutes,
-        alerts: alertIds, // Referencias a las alertas
+        alerts: alerts, 
         date: new Date()
       });
 
