@@ -8,7 +8,7 @@ const alertSchema = new Schema ({
     },
 
     description:{
-        type: String,
+        type: String,   
         required:true
     },
 

@@ -32,13 +32,16 @@ const historySchema = new Schema ({
         type:Date,
         default: Date.now
     },
-    alerts: [{
-        type: Schema.Types.ObjectId,
-        ref: "Alert",  // Esto indica que 'alerts' es una referencia a documentos de 'Alert'
-      }],
-
+   alerts: [{
+    type: Schema.Types.ObjectId,
+    ref: "Alert" // Referencia al modelo Alert
+  }]
 
 });
+
+historySchema.methods.getAlerts = async function() {
+    return await Alert.find({ _id: { $in: this.alerts } });
+  };
 
 
 export default model ("History",historySchema)
