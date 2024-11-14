@@ -68,10 +68,10 @@ class MqttService {
 
 
   broadcastTemperature(message) {
-    this.socketManager.broadcast('temperature-update', {
+    /*this.socketManager.broadcast('temperature-update',{
       temperature: message.temperature,
       humidity: message.humidity
-    });
+    });*/
   }
 
   handleConnectionError(error) {
