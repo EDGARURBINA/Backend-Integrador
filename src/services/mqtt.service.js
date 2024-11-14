@@ -48,15 +48,14 @@ class MqttService {
       const receivedMessage = JSON.parse(message.content.toString());
       console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage);
 
-      const { temperature, humidity, alerts } = receivedMessage;
-
       if (queueType === 'history') {
-        await this.saveHistory(receivedMessage, alerts); // Pasamos las alertas como parámetro
+        await this.saveHistory(receivedMessage);
       } else if (queueType === 'real_dates') {
         await this.saveRealDates(receivedMessage);
       }
 
       // Enviar datos de temperatura y humedad al cliente
+      const { temperature, humidity } = receivedMessage;
       this.socketManager.broadcast('sensorData', { temperature, humidity });
       this.channel.ack(message);
     } catch (error) {
@@ -65,41 +64,62 @@ class MqttService {
     }
   }
 
-  // Modificar saveHistory para manejar alertas como ObjectId
-  async saveHistory(message, alerts) {
+  async saveHistory(message) {
     console.log("Guardando historial:", message);
     try {
-      // Primero, si las alertas no están en la base de datos, guardarlas
+      // Asegurarnos de que alerts sea un array
+      const alerts = Array.isArray(message.alerts) ? message.alerts : [];
+      console.log("Procesando alertas:", alerts);
+
       const alertIds = [];
-      for (let alert of alerts) {
-        const existingAlert = await Alert.findOne({ id: alert.id });
-        if (existingAlert) {
-          alertIds.push(existingAlert._id); // Si la alerta ya existe, usamos su _id
-        } else {
-          const newAlert = new Alert(alert); // Si la alerta no existe, crearla
-          const savedAlert = await newAlert.save();
-          alertIds.push(savedAlert._id); // Usamos el _id de la nueva alerta
+      
+      // Procesar las alertas si existen
+      if (alerts.length > 0) {
+        for (const alert of alerts) {
+          if (!alert || !alert.id) {
+            console.warn('Alerta inválida encontrada, saltando:', alert);
+            continue;
+          }
+
+          try {
+            const existingAlert = await Alert.findOne({ id: alert.id });
+            if (existingAlert) {
+              alertIds.push(existingAlert._id);
+            } else {
+              const newAlert = new Alert({
+                id: alert.id,
+                description: alert.description || '',
+                priority: alert.priority || 'low',
+                date: alert.date || new Date()
+              });
+              const savedAlert = await newAlert.save();
+              alertIds.push(savedAlert._id);
+            }
+          } catch (alertError) {
+            console.error('Error al procesar alerta individual:', alertError);
+          }
         }
       }
 
-      // Ahora guardar el historial, referenciando las alertas
+      // Crear nuevo registro de historial
       const newHistory = new History({
         id: message.id,
-        temperatures: message.temperatures,
-        humidities: message.humidities,
-        weights: message.weights,
-        fruit: message.fruit,
-        automatic: message.automatic,
-        hours: message.hours,
-        minutes: message.minutes,
-        alerts: alerts, 
+        temperatures: Array.isArray(message.temperatures) ? message.temperatures : [],
+        humidities: Array.isArray(message.humidities) ? message.humidities : [],
+        weights: Array.isArray(message.weights) ? message.weights : [],
+        fruit: message.fruit || '',
+        automatic: Boolean(message.automatic),
+        hours: Number(message.hours) || 0,
+        minutes: Number(message.minutes) || 0,
+        alerts: alertIds, // Usar los IDs de las alertas en lugar de las alertas completas
         date: new Date()
       });
 
       await newHistory.save();
-      console.log("Historial guardado correctamente.");
+      console.log("Historial guardado correctamente con", alertIds.length, "alertas");
     } catch (error) {
       console.error("Error al guardar historial:", error);
+      throw error;
     }
   }
 
