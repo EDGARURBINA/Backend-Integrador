@@ -1,5 +1,6 @@
 import amqp from 'amqplib';
 import { mqttConfig } from '../config/mqtt.js';
+import History from "../models/History.js";
 
 class MqttService {
   constructor(socketManager) {
