@@ -52,3 +52,6 @@ const deviceSchema = new Schema ({
 
 
  export default model ("Device",deviceSchema)
+
+
+ //crear un evento de notificaciones 

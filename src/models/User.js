@@ -7,10 +7,10 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    id_dispositivos:{
+    id_dispositivos: [{
         type: String,
         required: true,
-    },
+    }],
     email:{
         type: String,
         required: true,

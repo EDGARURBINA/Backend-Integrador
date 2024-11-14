@@ -6,15 +6,15 @@ const historySchema = new Schema ({
         type: String,
         required:true
     },
-    temperatures:{
+    temperatures: [{
         type: Number
-    },
-    humidities:{
+    }],
+    humidities:[{
         type: Number
-    },
-    weights:{
+    }],
+    weights:[{
         type: Number
-    },
+    }],
     fruit:{
         type: String
     },
@@ -30,7 +30,11 @@ const historySchema = new Schema ({
     date:{
         type:Date,
         default: Date.now
-    }
+    },
+    alerts: [{
+        type: String,
+        required: true,
+    }],
 
 });
 

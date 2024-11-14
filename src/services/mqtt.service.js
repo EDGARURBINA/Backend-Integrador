@@ -64,6 +64,7 @@ class MqttService {
     await newTemperature.save();
     console.log("Temperatura guardada en la base de datos");
   }
+  
 
   broadcastTemperature(message) {
     this.socketManager.broadcast('temperature-update', {

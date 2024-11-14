@@ -16,7 +16,7 @@ export const verifyToken = async (req, res, next) => {
        if (!user) return res.status(404).json({ mesasage: "no existe el usuario" })
  
        next()
-    } catch (error) {
+    } catch (error) {                             
        return res.status(401).json({ mesasage: "no autorizado" })
  
     }
