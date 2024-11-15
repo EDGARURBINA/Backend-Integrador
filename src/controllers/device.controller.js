@@ -12,6 +12,8 @@ export const createDevice = async (req, res) => {
 };
 
 
+
+
 export const updateDevice = async (req, res) => {
     try {
         const { id } = req.params;
@@ -116,7 +118,7 @@ export const getDeviceHistory = async (req, res) => {
     try {
         const { id } = req.params;
         
-        // Buscar el dispositivo por su ID
+        
         const device = await Device.findOne({ id: id });
         if (!device) {
             return res.status(404).json({ message: "Dispositivo no encontrado" });

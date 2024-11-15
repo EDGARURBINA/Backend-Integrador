@@ -34,7 +34,7 @@ const historySchema = new Schema ({
     },
    alerts: [{
     type: Schema.Types.ObjectId,
-    ref: "Alert" // Referencia al modelo Alert
+    ref: "Alert" 
   }]
 
 });

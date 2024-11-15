@@ -32,17 +32,16 @@ class App {
     this.app.use("/api/auth", authRoutes);
     this.app.use("/api/devices", deviceRoutes);
     this.app.use("/api/pre_sets", pre_setRoutes);
-    this.app.use("/api/temperatures", temperatureRoutes);
+    
   }
 
   async initialize() {
     try {
-      // Inicializar Socket.IO
+      
       this.socketManager.initialize();
 
-      // Inicializar servicio MQTT
       this.mqttService = new MqttService(this.socketManager);
-      await this.mqttService.connect();
+      await this.mqttService.connect(); 
 
       console.log('Aplicación inicializada correctamente');
     } catch (error) {
@@ -50,7 +49,7 @@ class App {
       process.exit(1);
     }
   }
-}
+}       
 const app = new App();
 
 await app.initialize();

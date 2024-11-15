@@ -60,7 +60,7 @@ export const signUp = async (req, res) => {
     const { username, email, password, id_dispositivos, id, key, roles } = req.body;
 
     try {
-        // Creación del nuevo usuario
+        
         const newUser = new User({
             username,
             email,
@@ -75,14 +75,14 @@ export const signUp = async (req, res) => {
         if (roles && roles.length > 0) {
             const foundRoles = await Role.find({ name: { $in: roles } });
 
-            // Verificar si se encontraron todos los roles
+            
             if (foundRoles.length !== roles.length) {
                 return res.status(400).json({ message: "Uno o más roles no existen." });
             }
 
             newUser.roles = foundRoles.map(role => role._id);
         } else {
-        
+        //si ni se encuentra el rol especificado le asigna User por defecto
             const defaultRole = await Role.findOne({ name: "User" });
             if (defaultRole) {
                 newUser.roles = [defaultRole._id];
