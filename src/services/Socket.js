@@ -65,14 +65,13 @@ class SocketManager {
     console.log(`Comando de encendido/apagado emitido desde el servidor: ${action}`);
     this.io.emit("power-control", { action: action === "on" });
     
-
   }
 
   
   async handleTogglePower(socket, data) {
     console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
   
-    const action = data.action === "on";  // Determina si es "on" (true) o "off" (false)
+    const action = data.off_on;  // Determina si es "on" (true) o "off" (false)
   
     try {
       
@@ -94,7 +93,7 @@ class SocketManager {
     }
   }
 
-  
+
   handleDeviceHistory(socket, data) {
     console.log(`Historial de dispositivo recibido de ${socket.id}:`, data);
 
