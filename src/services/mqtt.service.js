@@ -113,6 +113,7 @@ class MqttService {
         minutes: Number(message.minutes) || 0,
         alerts: alertIds, 
         date: new Date()
+        
       });
   
       await newHistory.save();

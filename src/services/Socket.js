@@ -70,13 +70,13 @@ class SocketManager {
   async handleTogglePower(socket, data) {
     console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
   
-    const action = data.off_on; 
+    const action = data.pause; 
   
     try {
       
       const result = await Device.updateOne(
         { id: data.id },  
-        { $set: { off_on: action } }  
+        { $set: { pause: action } }  
       );
       console.log(result);
       if (result.modifiedCount === 1) {

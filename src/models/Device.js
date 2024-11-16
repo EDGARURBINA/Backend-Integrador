@@ -5,11 +5,7 @@ const deviceSchema = new Schema({
         type: String,
         required: true
     },
-    off_on: {
-        type: Boolean,
-        required: true,
-        
-    },
+   
     automatization: {
         type: Boolean
     },
