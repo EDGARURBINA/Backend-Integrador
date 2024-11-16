@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import Device from "../models/Device";
 
 class SocketManager {
   constructor(server) {
@@ -63,13 +64,36 @@ class SocketManager {
   emitPowerControl(action) {
     console.log(`Comando de encendido/apagado emitido desde el servidor: ${action}`);
     this.io.emit("power-control", { action: action === "on" });
+    
+
   }
 
   
   handleTogglePower(socket, data) {
     console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
-    const action = data.action === "on";
-    this.io.emit("power-control", { action });
+  
+    const action = data.action === "on";  // Determina si es "on" o "off"
+  
+    const deviceId = data.deviceId;  // Asegúrate de que el front-end envíe un 'deviceId'
+  
+    // Actualizar el dispositivo en la base de datos
+    Device.findByIdAndUpdate(
+      deviceId,                // Filtra por el id del dispositivo
+      { $set: { onn_off: action } },  // Actualiza el estado 'onn_off' del dispositivo
+      { new: true },           // Devuelve el documento actualizado
+      (err, updatedDevice) => {  // Manejamos la respuesta de la operación
+        if (err) {
+          console.error('Error al actualizar el dispositivo:', err);
+          socket.emit('message', { msg: 'Error al actualizar el dispositivo.' });
+        } else if (!updatedDevice) {
+          console.log("No se encontró el dispositivo.");
+          socket.emit('message', { msg: 'No se encontró el dispositivo.' });
+        } else {
+          console.log('Dispositivo actualizado:', updatedDevice);
+          this.io.emit("power-control", { action });  // Notificar a todos los clientes
+        }
+      }
+    );
   }
 
   
