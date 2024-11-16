@@ -32,9 +32,9 @@ class MqttService {
       await this.channel.assertQueue(mqttConfig.queueNotifications, { durable: true });
 
       this.channel.consume(mqttConfig.queueHistory, this.handleMessage.bind(this, 'history'), { noAck: false });
-      this.channel.consume(mqttConfig.queueRealDates, this.handleMessage.bind(this, 'notifications'), { noAck: false });
+      this.channel.consume(mqttConfig.queueNotifications, this.handleMessage.bind(this, 'notifications'), { noAck: false });
 
-      console.log(`Escuchando las colas ${mqttConfig.queueHistory} y ${mqttConfig.queueRealDates}`);
+      console.log(`Escuchando las colas ${mqttConfig.queueHistory} y ${mqttConfig.queueNotifications}`);
     } catch (error) {
       console.error('Error al configurar el canal:', error);
       throw error;
@@ -46,18 +46,20 @@ class MqttService {
   
     try {
       const receivedMessage = JSON.parse(message.content.toString());
-      console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage); // Log del mensaje completo
+      console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage);
   
       if (queueType === 'history') {
-        console.log("Detalles del mensaje para 'history':", receivedMessage);
         await this.saveHistory(receivedMessage);
-      } else if (queueType === 'real_dates') {
-        console.log("Detalles del mensaje para 'real_dates':", receivedMessage);
-        await this.saveRealDates(receivedMessage);
+      } else if (queueType === 'notifications') {
+        // Asegúrate de tener implementado este método si lo necesitas
+        await this.handleNotification(receivedMessage);
       }
   
       const { temperature, humidity } = receivedMessage;
-      this.socketManager.broadcast('sensorData', { temperature, humidity });
+      if (temperature !== undefined && humidity !== undefined) {
+        this.socketManager.broadcast('sensorData', { temperature, humidity });
+      }
+      
       this.channel.ack(message);
     } catch (error) {
       console.error('Error al procesar mensaje:', error);
@@ -113,14 +115,13 @@ class MqttService {
         minutes: Number(message.minutes) || 0,
         alerts: alertIds, 
         date: new Date()
-
       });
   
       await newHistory.save();
       console.log("Historial guardado correctamente con", alertIds.length, "alertas");
       
-      // Emitir evento 'device' al cliente
-      this.socketManager.broadcastDeviceUpdate(newHistory); 
+      // Usar broadcast en lugar de broadcastDeviceUpdate
+      this.socketManager.broadcast('device', newHistory);
       console.log("Evento 'device' emitido a los clientes");
       
     } catch (error) {
@@ -137,6 +138,12 @@ class MqttService {
   handleConnectionClose() {
     console.log('Conexión RabbitMQ cerrada. Reintentando...');
     setTimeout(() => this.connect(), mqttConfig.reconnectTimeout);
+  }
+
+  // Método para manejar notificaciones si es necesario
+  async handleNotification(message) {
+    // Implementa la lógica para manejar notificaciones aquí
+    console.log('Notificación recibida:', message);
   }
 }
 

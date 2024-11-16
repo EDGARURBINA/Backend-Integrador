@@ -15,7 +15,6 @@ class SocketManager {
   initialize() {
     this.io.on("connection", (socket) => {
       console.log(`Cliente conectado - ID: ${socket.id}`);
-
    
       this.connectedClients.set(socket.id, {
         connectionTime: new Date(),
@@ -26,7 +25,6 @@ class SocketManager {
       this.sendMessage(socket, {
         msg: "Conectado al servidor",
       });
-
       
       socket.on("togglePower", (data) => this.handleTogglePower(socket, data));
       socket.on("message", (data) => this.handleClientMessage(socket, data));
@@ -35,11 +33,11 @@ class SocketManager {
     });
   }
 
-  
+  // Método utilizado por MqttService para broadcast de eventos
   broadcast(event, data) {
+    console.log(`Broadcasting event '${event}' with data:`, data);
     this.io.emit(event, data);
   }
-
   
   sendMessage(socket, message) {
     socket.emit("message", message);
@@ -47,31 +45,26 @@ class SocketManager {
 
   handleClientMessage(socket, data) {
     console.log(`Mensaje recibido de ${socket.id}:`, data);
-
     
     if (this.connectedClients.has(socket.id)) {
       this.connectedClients.get(socket.id).lastActivity = new Date();
     }
-
   
     this.sendMessage(socket, {
       msg: "Mensaje recibido correctamente",
       timestamp: new Date(),
     });
   }
-
   
   emitPowerControl(action) {
     console.log(`Comando de encendido/apagado emitido desde el servidor: ${action}`);
     this.io.emit("power-control", { action: action === "on" });    
   }
 
-
   async handleTogglePower(socket, data) {
     console.log(`Comando de pause recibido de ${socket.id}:`, data);
 
     try {
-      // Primero verificamos si el dispositivo existe y su estado actual
       const device = await Device.findOne({ id: data.id });
 
       if (!device) {
@@ -79,7 +72,6 @@ class SocketManager {
         return;
       }
 
-      // Alternamos el estado de pause si no se proporciona uno específico
       const newPauseState = data.pause !== undefined ? data.pause : !device.pause;
 
       const result = await Device.findOneAndUpdate(
@@ -91,8 +83,7 @@ class SocketManager {
       if (result) {
         console.log(`Dispositivo ${data.id} ${result.pause ? 'pausado' : 'activado'}`);
         
-        // Emitimos el nuevo estado a todos los clientes
-        this.io.emit("power-control", {
+        this.broadcast("power-control", {
           id: data.id,
           pause: result.pause
         });
@@ -104,13 +95,11 @@ class SocketManager {
 
   handleDeviceHistory(socket, data) {
     console.log(`Historial de dispositivo recibido de ${socket.id}:`, data);
-
     
     const deviceHistory = {
       deviceId: data.deviceId,
       historyData: data.historyData, 
     };
-
     
     this.sendMessage(socket, {
       msg: "Historial de dispositivo recibido",
@@ -118,11 +107,9 @@ class SocketManager {
       timestamp: new Date(),
     });
 
-    // También puedes broadcast a todos los clientes si quieres compartir el historial
     this.broadcast("deviceHistory", deviceHistory);
   }
 
-  // Manejar la desconexión del cliente
   handleDisconnect(socket) {
     console.log(`Cliente desconectado - ID: ${socket.id}`);
     this.connectedClients.delete(socket.id);
