@@ -78,8 +78,9 @@ class SocketManager {
         { id: data.id },  
         { $set: { off_on: action } }  
       );
-  
+      console.log(result);
       if (result.nModified === 1) {
+        
         console.log("Acción guardada correctamente en el dispositivo");
         this.io.emit("power-control", data);
       } else {
