@@ -71,12 +71,8 @@ class MqttService {
     console.log("Guardando historial:", message);
   
     try {
-      // Extrae los datos del mensaje
-      const { device, data, timestamp } = message;
-      const { temperatures, humidities, gas, weights } = data;
-  
       const alerts = Array.isArray(message.alert) ? message.alert : [];
-      console.log("Procesando alertas:", alerts);
+      console.log("Procesando alertas:", alerts); 
   
       const alertIds = [];
   
@@ -108,24 +104,23 @@ class MqttService {
         }
       }
   
-      // Crear un nuevo historial con los datos adaptados
       const newHistory = new History({
-        device,  // Asigna el dispositivo
-        temperatures: Array.isArray(temperatures) ? temperatures : [temperatures],
-        humidities: Array.isArray(humidities) ? humidities : [humidities],
-        weights: Array.isArray(weights) ? weights : [weights],
-        fruit: message.fruit || '',
-        automatic: Boolean(message.automatic),
-        hours: Number(message.hours) || 0,
-        minutes: Number(message.minutes) || 0,
-        alerts: alertIds,
-        date: timestamp || new Date()  // Usa el timestamp del mensaje o la fecha actual
+        id: message.id,
+        temperatures: Array.isArray(message.data.temperatures) ? message.data.temperatures : [message.data.temperatures],  // Asegúrate de que sea un array
+        humidities: Array.isArray(message.data.humidities) ? message.data.humidities : [message.data.humidities],  // Asegúrate de que sea un array
+        weights: Array.isArray(message.data.weights) ? message.data.weights : [message.data.weights],  // Asegúrate de que sea un array
+        fruit: message.data.fruit || '',
+        automatic: Boolean(message.data.automatic),
+        hours: Number(message.data.hours) || 0,
+        minutes: Number(message.data.minutes) || 0,
+        alerts: alertIds, 
+        date: new Date(message.timestamp)  // Usar el timestamp para la fecha
       });
   
       await newHistory.save();
       console.log("Historial guardado correctamente con", alertIds.length, "alertas");
   
-      // Broadcast del evento 'device'
+      // Usar broadcast en lugar de broadcastDeviceUpdate
       this.socketManager.broadcast('device', newHistory);
       console.log("Evento 'device' emitido a los clientes");
   
@@ -134,7 +129,6 @@ class MqttService {
       throw error;
     }
   }
-
   handleConnectionError(error) {
     console.error('Error en la conexión RabbitMQ:', error);
     setTimeout(() => this.connect(), mqttConfig.reconnectTimeout);
