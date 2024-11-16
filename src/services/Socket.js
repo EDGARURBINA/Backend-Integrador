@@ -69,33 +69,28 @@ class SocketManager {
   }
 
   
-  handleTogglePower(socket, data) {
+  async handleTogglePower(socket, data) {
     console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
-  
-    const action = data.action === "on";  // Determina si es "on" o "off"
-  
-    const deviceId = data.deviceId;  // Asegúrate de que el front-end envíe un 'deviceId'
-  
-    // Actualizar el dispositivo en la base de datos
-    Device.findByIdAndUpdate(
-      deviceId,                // Filtra por el id del dispositivo
-      { $set: { onn_off: action } },  // Actualiza el estado 'onn_off' del dispositivo
-      { new: true },           // Devuelve el documento actualizado
-      (err, updatedDevice) => {  // Manejamos la respuesta de la operación
-        if (err) {
-          console.error('Error al actualizar el dispositivo:', err);
-          socket.emit('message', { msg: 'Error al actualizar el dispositivo.' });
-        } else if (!updatedDevice) {
-          console.log("No se encontró el dispositivo.");
-          socket.emit('message', { msg: 'No se encontró el dispositivo.' });
-        } else {
-          console.log('Dispositivo actualizado:', updatedDevice);
-          this.io.emit("power-control", { action });  // Notificar a todos los clientes
-        }
-      }
-    );
-  }
+    
+    const action = data.action === "on"; // Determina si es "on" o "off"
 
+    try {
+      // Actualiza el campo 'off_on' en la base de datos
+      const result = await Device.updateOne(
+        { id: data.deviceId },  // Filtra por el id del dispositivo
+        { $set: { off_on: action } } // Actualiza el estado 'off_on' del dispositivo
+      );
+      
+      if (result.nModified === 1) {
+        console.log("Dispositivo actualizado correctamente");
+        this.io.emit("power-control", { action });
+      } else {
+        console.log("No se encontró el dispositivo o no hubo cambios");
+      }
+    } catch (error) {
+      console.error("Error al actualizar el dispositivo:", error);
+    }
+  }
   
   handleDeviceHistory(socket, data) {
     console.log(`Historial de dispositivo recibido de ${socket.id}:`, data);
