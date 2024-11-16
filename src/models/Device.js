@@ -1,56 +1,53 @@
 import { Schema, model } from "mongoose";
 
-const deviceSchema = new Schema ({
-    id:{
+const deviceSchema = new Schema({
+    id: {
         type: String,
-        required:true
+        required: true
     },
-    off_on:{
+    off_on: {
         type: Boolean,
         required: true
     },
-    automatization:{
-        type:Boolean
-
-    } ,
-    temperatures:{
-        type: Number
-    } ,
-    pre_set:{
-        type: String,
+    automatization: {
+        type: Boolean
     },
-    humidity_min:{
-        type: Number
-
+    temperature: {
+        type: Number, 
     },
-    weight_min:{
-        type: Number
+    pre_set: {
+        type: String, 
     },
-    hour_final:{
-        type: Number
+    humidity: {
+        type: Number,
     },
-    minute_final:{
-        type: Number
+    weight: {
+        type: Number,
     },
-    hour_now:{
-        type: Number
+    airPurity: {
+        type: Number, 
     },
-    minute_now:{
-        type: Number
+    hours_actual: {
+        type: Number, 
     },
-    
+    minute_actual: {
+        type: Number, 
+    },
+    hours: {
+        type: Number, 
+    },
+    minute: {
+        type: Number, 
+    },
     histories: [
         {
           type: Schema.Types.ObjectId,
           ref: "History",
         },
       ],
-    pause:{
-        type:Boolean,
- }
+    pause: {
+        type: Boolean,
+    }
 });
 
-
- export default model ("Device",deviceSchema)
-
-
+export default model("Device", deviceSchema);

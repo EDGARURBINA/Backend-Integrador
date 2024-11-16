@@ -5,7 +5,7 @@ import http from "http";
 import authRoutes from "./routes/auth.routes.js";
 import deviceRoutes from "./routes/device.routes.js";
 import pre_setRoutes from "./routes/pre_set.routes.js";
-import temperatureRoutes from "./routes/temperature.routes.js";
+
 import SocketManager from "./services/Socket.js";
 import MqttService from "./services/mqtt.service.js";
 

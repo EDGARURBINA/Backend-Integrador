@@ -89,7 +89,7 @@ export const updateDeviceStatus = async (req, res) => {
             return res.status(404).json({ message: "Dispositivo no encontrado" });
         }
 
-        // Si el dispositivo se apaga (off_on = false), registra un historial
+        // Si el dispositivo se apaga (off_on = false), registra un historiap
         if (off_on === false) {
             const newHistory = new History({
                 id: updatedDevice.id,
