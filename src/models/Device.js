@@ -36,7 +36,7 @@ const deviceSchema = new Schema({
     hours: {
         type: Number, 
     },
-    minute: {
+    minutes: {
         type: Number, 
     },
     histories: [

@@ -72,48 +72,6 @@ export const getDeviceById = async (req, res) => {
     }
 };
 
-
-export const updateDeviceStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { off_on } = req.body;
-
-        // Encuentra y actualiza el estado del dispositivo
-        const updatedDevice = await Device.findByIdAndUpdate(
-            id,
-            { off_on },
-            { new: true }
-        );
-
-        if (!updatedDevice) {
-            return res.status(404).json({ message: "Dispositivo no encontrado" });
-        }
-
-        // Si el dispositivo se apaga (off_on = false), registra un historiap
-        if (off_on === false) {
-            const newHistory = new History({
-                id: updatedDevice.id,
-                temperatures: updatedDevice.temperatures,
-                humidities: updatedDevice.humidities,
-                weights: updatedDevice.weights,
-                fruit: updatedDevice.fruit,
-                automatic: updatedDevice.automatic,
-                hours: updatedDevice.hours,
-                minutes: updatedDevice.minutes,
-                date: new Date() 
-            });
-
-            await newHistory.save(); 
-        }
-
-        res.json(updatedDevice);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-};
-
-
-
 export const getDeviceHistory = async (req, res) => {
     try {
         const { id } = req.params;

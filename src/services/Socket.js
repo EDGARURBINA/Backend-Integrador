@@ -47,7 +47,7 @@ class SocketManager {
   handleClientMessage(socket, data) {
     console.log(`Mensaje recibido de ${socket.id}:`, data);
 
-    // Actualizar la última actividad del cliente
+    
     if (this.connectedClients.has(socket.id)) {
       this.connectedClients.get(socket.id).lastActivity = new Date();
     }
