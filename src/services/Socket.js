@@ -16,7 +16,7 @@ class SocketManager {
     this.io.on("connection", (socket) => {
       console.log(`Cliente conectado - ID: ${socket.id}`);
 
-      // Almacenar información del cliente conectado
+   
       this.connectedClients.set(socket.id, {
         connectionTime: new Date(),
         lastActivity: new Date(),
@@ -63,28 +63,25 @@ class SocketManager {
   
   emitPowerControl(action) {
     console.log(`Comando de encendido/apagado emitido desde el servidor: ${action}`);
-    this.io.emit("power-control", { action: action === "on" });
-    
+    this.io.emit("power-control", { action: action === "on" });    
   }
 
-  
+
   async handleTogglePower(socket, data) {
     console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
   
-    const action = data.off_on;  // Determina si es "on" (true) o "off" (false)
+    const action = data.off_on; 
   
     try {
       
       const result = await Device.updateOne(
-        { id: data.id },  // Filtra por el id del dispositivo
-        { $set: { off_on: action } }  // Guarda la acción en el campo 'off_on'
+        { id: data.id },  
+        { $set: { off_on: action } }  
       );
   
       if (result.nModified === 1) {
         console.log("Acción guardada correctamente en el dispositivo");
-  
-        // Aquí puedes emitir el evento a los clientes si deseas notificar el cambio
-        this.io.emit("power-control", { action });
+        this.io.emit("power-control", data);
       } else {
         console.log("No se encontró el dispositivo o no hubo cambios");
       }

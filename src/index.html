@@ -16,6 +16,7 @@
 
         // Escuchar el evento power-control
         socket.on("power-control", (data) => {
+            console.log("Evento recibido:", data);
             const statusDiv = document.getElementById("status");
             if (data.action) {
                 statusDiv.textContent = "El dispositivo está ENCENDIDO";
