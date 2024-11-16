@@ -71,8 +71,12 @@ class MqttService {
     console.log("Guardando historial:", message);
   
     try {
+      // Extrae los datos del mensaje
+      const { device, data, timestamp } = message;
+      const { temperatures, humidities, gas, weights } = data;
+  
       const alerts = Array.isArray(message.alert) ? message.alert : [];
-      console.log("Procesando alertas:", alerts); 
+      console.log("Procesando alertas:", alerts);
   
       const alertIds = [];
   
@@ -103,27 +107,28 @@ class MqttService {
           }
         }
       }
-
+  
+      // Crear un nuevo historial con los datos adaptados
       const newHistory = new History({
-        id: message.id,
-        temperatures: Array.isArray(message.temperatures) ? message.temperatures : [],
-        humidities: Array.isArray(message.humidities) ? message.humidities : [],
-        weights: Array.isArray(message.weights) ? message.weights : [],
+        device,  // Asigna el dispositivo
+        temperatures: Array.isArray(temperatures) ? temperatures : [temperatures],
+        humidities: Array.isArray(humidities) ? humidities : [humidities],
+        weights: Array.isArray(weights) ? weights : [weights],
         fruit: message.fruit || '',
         automatic: Boolean(message.automatic),
         hours: Number(message.hours) || 0,
         minutes: Number(message.minutes) || 0,
-        alerts: alertIds, 
-        date: new Date()
+        alerts: alertIds,
+        date: timestamp || new Date()  // Usa el timestamp del mensaje o la fecha actual
       });
   
       await newHistory.save();
       console.log("Historial guardado correctamente con", alertIds.length, "alertas");
-      
-      // Usar broadcast en lugar de broadcastDeviceUpdate
+  
+      // Broadcast del evento 'device'
       this.socketManager.broadcast('device', newHistory);
       console.log("Evento 'device' emitido a los clientes");
-      
+  
     } catch (error) {
       console.error("Error al guardar historial:", error);
       throw error;
