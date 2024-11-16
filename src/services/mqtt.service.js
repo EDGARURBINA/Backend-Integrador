@@ -2,12 +2,18 @@ import amqp from 'amqplib';
 import { mqttConfig } from '../config/mqtt.js';
 import History from "../models/History.js";
 import Alert from '../models/Alert.js';
+import mongoose from 'mongoose';
+
 
 class MqttService {
   constructor(socketManager) {
     this.socketManager = socketManager;
     this.connection = null;
     this.channel = null;
+
+
+    this.alerts = []; // Array donde acumulamos las alertas
+
   }
 
   async connect() {
@@ -46,8 +52,7 @@ class MqttService {
   
     try {
       const receivedMessage = JSON.parse(message.content.toString());
-      console.log(`Mensaje MQTT recibido de ${queueType}:`, receivedMessage);
-  
+
       if (queueType === 'history') {
         await this.saveHistory(receivedMessage);
       } else if (queueType === 'notifications') {
@@ -67,66 +72,68 @@ class MqttService {
     }
   }
 
+
+  async handleNotification(message) {
+    if (message.notification) {
+      // Asegurarse de que el mensaje de notificación sea un array
+      const alerts = Array.isArray(message.notification) ? message.notification : [message.notification];
+  
+      // Iteramos sobre cada alerta y la agregamos al arreglo `this.alert`
+      alerts.forEach(alert => {
+        const alertId = {
+          _id: new mongoose.Types.ObjectId(),  // Generar un ID único para cada alerta
+          ...alert  // Copiar todas las propiedades de la alerta
+        };
+        
+        // Agregar la alerta al array `this.alert`
+        this.alerts.push(alertId);
+  
+        console.log("Añadiendo alerta al array this.alert:", alertId);
+      });
+  
+      console.log("Alertas procesadas y agregadas al array this.alert:", this.alerts);
+      return this.alerts;  // Devolver las alertas procesadas
+    } else {
+      console.error("No se recibió una notificación válida");
+      return [];  // Retornamos un array vacío si no hay notificación
+    }
+  }
+  
+  
+
   async saveHistory(message) {
     console.log("Guardando historial:", message);
-  
-    try {
-      const alertIds = [];
-  
-      // Verificar si hay alertas en el mensaje MQTT
-      const alerts = message.notification ? [message.notification] : [];
-      console.log("Alertas procesadas:", alerts);
-  
-      if (alerts.length > 0) {
-        for (const alert of alerts) {
-          const alertId = alert.id || `${alert.type}-${new Date().getTime()}`;
-          console.log("ID de alerta:", alertId);  // Verificar el ID
-  
-          // Verificar si la alerta ya existe en la base de datos
-          const existingAlert = await Alert.findOne({ id: alertId });
-          if (existingAlert) {
-            alertIds.push(existingAlert._id);
-            console.log("Alerta existente encontrada:", existingAlert);
-          } else {
-            // Si no existe, crear una nueva alerta
-            const newAlert = new Alert({
-              id: alertId,
-              description: alert.description || '',
-              priority: alert.priority || 'low',
-              date: alert.date || new Date()
-            });
-            console.log(alert.description);
-            
-  
-            const savedAlert = await newAlert.save();
-            alertIds.push(savedAlert._id);
-            console.log("Nueva alerta guardada:", savedAlert);
-          }
-        }
-      }
-  
+    try {  
+
+          // Verificar si message.data existe y tiene las propiedades necesarias
+    const temperatures = Array.isArray(message.data?.temperatures) ? message.data.temperatures : [message.data?.temperatures];
+    const humidities = Array.isArray(message.data?.humidities) ? message.data.humidities : [message.data?.humidities];
+    const weights = Array.isArray(message.data?.weights) ? message.data.weights : [message.data?.weights];
+
+
       // Ahora que tienes los alertIds, proceder con la creación del historial
       const newHistory = new History({
         id: message.device,
-        temperatures: Array.isArray(message.data.temperatures) ? message.data.temperatures : [message.data.temperatures],
-        humidities: Array.isArray(message.data.humidities) ? message.data.humidities : [message.data.humidities],
-        weights: Array.isArray(message.data.weights) ? message.data.weights : [message.data.weights],
-        fruit: message.data.fruit || '',
-        automatic: Boolean(message.data.automatic),
-        hours: Number(message.data.hours) || 0,
-        minutes: Number(message.data.minutes) || 0,
-        alerts: alertIds, // Asegúrate de que `alertIds` contiene IDs válidos
+        temperatures: temperatures,
+        humidities: humidities,
+        weights: weights,
+        fruit: message.data?.fruit || '',
+        automatic: Boolean(message.data?.automatic),
+        hours: Number(message.data?.hours) || 0,
+        minutes: Number(message.data?.minutes) || 0,
+        alerts: this.alerts,  // Agregar las alertas procesadas al historial
         notification: message.notification || {},  // Añadir la notificación al historial
         date: new Date(message.timestamp)
       });
   
       await newHistory.save();
-      console.log("Historial guardado correctamente con", alertIds.length, "alertas y notificación.");
+      console.log("Historial guardado correctamente con", this.alerts.length , "alertas y notificación.");
   
       // Broadcast
       this.socketManager.broadcast('device', newHistory);
       console.log("Evento 'device' emitido a los clientes");
-  
+      this.resetAlerts();  // Aquí limpias el array de alertas
+
     } catch (error) {
       console.error("Error al guardar historial:", error);
       throw error;
@@ -137,16 +144,17 @@ class MqttService {
     setTimeout(() => this.connect(), mqttConfig.reconnectTimeout);
   }
 
+  resetAlerts() {
+    this.alerts = [];  // Asignamos un nuevo array vacío a this.alerts
+    console.log("Alertas reseteadas");
+  }
+
   handleConnectionClose() {
     console.log('Conexión RabbitMQ cerrada. Reintentando...');
     setTimeout(() => this.connect(), mqttConfig.reconnectTimeout);
   }
 
-  // Método para manejar notificaciones si es necesario
-  async handleNotification(message) {
-    // Implementa la lógica para manejar notificaciones aquí
-    console.log('Notificación recibida:', message);
-  }
+
 }
 
 export default MqttService;

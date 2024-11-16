@@ -32,16 +32,9 @@ const historySchema = new Schema ({
         type:Date,
         default: Date.now
     },
-   alerts: [{
-    type: Schema.Types.ObjectId,
-    ref: "Alert" 
-  }],
-  notification: {
-    type: Map,
-    of: Schema.Types.Mixed,  // Esto permite almacenar el objeto de la notificación
-    default: {}
-  }
-
+    alerts: [{
+        type: Object,  // Cambiar a 'Object' en lugar de 'ObjectId'
+    }],
 });
 
 historySchema.methods.getAlerts = async function() {
