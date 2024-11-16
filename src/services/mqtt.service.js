@@ -80,27 +80,30 @@ class MqttService {
       if (alerts.length > 0) {
         for (const alert of alerts) {
           const alertId = alert.id || `${alert.type}-${new Date().getTime()}`;
-          try {
-            const existingAlert = await Alert.findOne({ id: alertId });
-            if (existingAlert) {
-              alertIds.push(existingAlert._id);
-            } else {
-              const newAlert = new Alert({
-                id: alertId,
-                description: alert.description || '',
-                priority: alert.priority || 'low',
-                date: alert.date || new Date()
-              });
-              const savedAlert = await newAlert.save();
-              alertIds.push(savedAlert._id);
-            }
-          } catch (alertError) {
-            console.error('Error al procesar alerta individual:', alertError);
+          console.log("ID de alerta:", alertId);  // Verificar el ID
+  
+          // Verificar si la alerta ya existe en la base de datos
+          const existingAlert = await Alert.findOne({ id: alertId });
+          if (existingAlert) {
+            alertIds.push(existingAlert._id);
+            console.log("Alerta existente encontrada:", existingAlert);
+          } else {
+            // Si no existe, crear una nueva alerta
+            const newAlert = new Alert({
+              id: alertId,
+              description: alert.description || '',
+              priority: alert.priority || 'low',
+              date: alert.date || new Date()
+            });
+  
+            const savedAlert = await newAlert.save();
+            alertIds.push(savedAlert._id);
+            console.log("Nueva alerta guardada:", savedAlert);
           }
         }
       }
   
-      // Guardar el historial con la notificación incluida
+      // Ahora que tienes los alertIds, proceder con la creación del historial
       const newHistory = new History({
         id: message.device,
         temperatures: Array.isArray(message.data.temperatures) ? message.data.temperatures : [message.data.temperatures],
@@ -110,7 +113,7 @@ class MqttService {
         automatic: Boolean(message.data.automatic),
         hours: Number(message.data.hours) || 0,
         minutes: Number(message.data.minutes) || 0,
-        alerts: alertIds,
+        alerts: alertIds, // Asegúrate de que `alertIds` contiene IDs válidos
         notification: message.notification || {},  // Añadir la notificación al historial
         date: new Date(message.timestamp)
       });
