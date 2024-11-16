@@ -68,29 +68,39 @@ class SocketManager {
 
 
   async handleTogglePower(socket, data) {
-    console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
-  
-    const action = data.pause; 
-  
+    console.log(`Comando de pause recibido de ${socket.id}:`, data);
+
     try {
-      
-      const result = await Device.updateOne(
-        { id: data.id },  
-        { $set: { pause: action } }  
+      // Primero verificamos si el dispositivo existe y su estado actual
+      const device = await Device.findOne({ id: data.id });
+
+      if (!device) {
+        console.log(`No se encontró el dispositivo con ID: ${data.id}`);
+        return;
+      }
+
+      // Alternamos el estado de pause si no se proporciona uno específico
+      const newPauseState = data.pause !== undefined ? data.pause : !device.pause;
+
+      const result = await Device.findOneAndUpdate(
+        { id: data.id },
+        { $set: { pause: newPauseState } },
+        { new: true }
       );
-      console.log(result);
-      if (result.modifiedCount === 1) {
+
+      if (result) {
+        console.log(`Dispositivo ${data.id} ${result.pause ? 'pausado' : 'activado'}`);
         
-        console.log("Acción guardada correctamente en el dispositivo");
-        this.io.emit("power-control", data);
-      } else {
-        console.log("No se encontró el dispositivo o no hubo cambios");
+        // Emitimos el nuevo estado a todos los clientes
+        this.io.emit("power-control", {
+          id: data.id,
+          pause: result.pause
+        });
       }
     } catch (error) {
-      console.error("Error al guardar la acción en el dispositivo:", error);
+      console.error("Error al actualizar el dispositivo:", error);
     }
   }
-
 
   handleDeviceHistory(socket, data) {
     console.log(`Historial de dispositivo recibido de ${socket.id}:`, data);
