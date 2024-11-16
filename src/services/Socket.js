@@ -76,7 +76,7 @@ class SocketManager {
     try {
       
       const result = await Device.updateOne(
-        { id: data.deviceId },  // Filtra por el id del dispositivo
+        { id: data.id },  // Filtra por el id del dispositivo
         { $set: { off_on: action } }  // Guarda la acción en el campo 'off_on'
       );
   
