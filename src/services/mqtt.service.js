@@ -71,18 +71,14 @@ class MqttService {
     console.log("Guardando historial:", message);
   
     try {
-      const alerts = Array.isArray(message.alert) ? message.alert : [];
-      console.log("Procesando alertas:", alerts); 
-  
       const alertIds = [];
+  
+      // Verificar si hay alertas en el mensaje MQTT
+      const alerts = message.notification ? [message.notification] : [];
+      console.log("Alertas procesadas:", alerts);
   
       if (alerts.length > 0) {
         for (const alert of alerts) {
-          if (!alert) {
-            console.warn('Alerta inválida encontrada, saltando:', alert);
-            continue;
-          }
-  
           const alertId = alert.id || `${alert.type}-${new Date().getTime()}`;
           try {
             const existingAlert = await Alert.findOne({ id: alertId });
@@ -90,7 +86,7 @@ class MqttService {
               alertIds.push(existingAlert._id);
             } else {
               const newAlert = new Alert({
-                id: alertId, 
+                id: alertId,
                 description: alert.description || '',
                 priority: alert.priority || 'low',
                 date: alert.date || new Date()
@@ -104,23 +100,25 @@ class MqttService {
         }
       }
   
+      // Guardar el historial con la notificación incluida
       const newHistory = new History({
-        id: message.id,
-        temperatures: Array.isArray(message.data.temperatures) ? message.data.temperatures : [message.data.temperatures],  // Asegúrate de que sea un array
-        humidities: Array.isArray(message.data.humidities) ? message.data.humidities : [message.data.humidities],  // Asegúrate de que sea un array
-        weights: Array.isArray(message.data.weights) ? message.data.weights : [message.data.weights],  // Asegúrate de que sea un array
+        id: message.device,
+        temperatures: Array.isArray(message.data.temperatures) ? message.data.temperatures : [message.data.temperatures],
+        humidities: Array.isArray(message.data.humidities) ? message.data.humidities : [message.data.humidities],
+        weights: Array.isArray(message.data.weights) ? message.data.weights : [message.data.weights],
         fruit: message.data.fruit || '',
         automatic: Boolean(message.data.automatic),
         hours: Number(message.data.hours) || 0,
         minutes: Number(message.data.minutes) || 0,
-        alerts: alertIds, 
-        date: new Date(message.timestamp)  // Usar el timestamp para la fecha
+        alerts: alertIds,
+        notification: message.notification || {},  // Añadir la notificación al historial
+        date: new Date(message.timestamp)
       });
   
       await newHistory.save();
-      console.log("Historial guardado correctamente con", alertIds.length, "alertas");
+      console.log("Historial guardado correctamente con", alertIds.length, "alertas y notificación.");
   
-      // Usar broadcast en lugar de broadcastDeviceUpdate
+      // Broadcast
       this.socketManager.broadcast('device', newHistory);
       console.log("Evento 'device' emitido a los clientes");
   

@@ -35,7 +35,12 @@ const historySchema = new Schema ({
    alerts: [{
     type: Schema.Types.ObjectId,
     ref: "Alert" 
-  }]
+  }],
+  notification: {
+    type: Map,
+    of: Schema.Types.Mixed,  // Esto permite almacenar el objeto de la notificación
+    default: {}
+  }
 
 });
 
