@@ -5,6 +5,6 @@ export const mqttConfig = {
   username: 'blocksolutions-back',
   password: 'leedpees',
   queueHistory: 'history',  
-  queueRealDates: 'real_dates',  
+  queueNotifications: 'notifications',  
   reconnectTimeout: 5000
 }

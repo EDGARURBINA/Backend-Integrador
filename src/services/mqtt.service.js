@@ -29,10 +29,10 @@ class MqttService {
     try {
       this.channel = await this.connection.createChannel();
       await this.channel.assertQueue(mqttConfig.queueHistory, { durable: true });
-      await this.channel.assertQueue(mqttConfig.queueRealDates, { durable: true });
+      await this.channel.assertQueue(mqttConfig.queueNotifications, { durable: true });
 
       this.channel.consume(mqttConfig.queueHistory, this.handleMessage.bind(this, 'history'), { noAck: false });
-      this.channel.consume(mqttConfig.queueRealDates, this.handleMessage.bind(this, 'real_dates'), { noAck: false });
+      this.channel.consume(mqttConfig.queueRealDates, this.handleMessage.bind(this, 'notifications'), { noAck: false });
 
       console.log(`Escuchando las colas ${mqttConfig.queueHistory} y ${mqttConfig.queueRealDates}`);
     } catch (error) {
@@ -113,7 +113,7 @@ class MqttService {
         minutes: Number(message.minutes) || 0,
         alerts: alertIds, 
         date: new Date()
-        
+
       });
   
       await newHistory.save();
