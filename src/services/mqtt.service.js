@@ -95,6 +95,8 @@ class MqttService {
               priority: alert.priority || 'low',
               date: alert.date || new Date()
             });
+            console.log(alert.description);
+            
   
             const savedAlert = await newAlert.save();
             alertIds.push(savedAlert._id);
