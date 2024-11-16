@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import Device from "../models/Device";
+import Device from "../models/Device.js";
 
 class SocketManager {
   constructor(server) {
