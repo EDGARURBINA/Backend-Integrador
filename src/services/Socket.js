@@ -71,26 +71,29 @@ class SocketManager {
   
   async handleTogglePower(socket, data) {
     console.log(`Comando de encendido/apagado recibido de ${socket.id}:`, data);
-    
-    const action = data.action === "on"; // Determina si es "on" o "off"
-
+  
+    const action = data.action === "on";  // Determina si es "on" (true) o "off" (false)
+  
     try {
-      // Actualiza el campo 'off_on' en la base de datos
+      
       const result = await Device.updateOne(
         { id: data.deviceId },  // Filtra por el id del dispositivo
-        { $set: { off_on: action } } // Actualiza el estado 'off_on' del dispositivo
+        { $set: { off_on: action } }  // Guarda la acción en el campo 'off_on'
       );
-      
+  
       if (result.nModified === 1) {
-        console.log("Dispositivo actualizado correctamente");
+        console.log("Acción guardada correctamente en el dispositivo");
+  
+        // Aquí puedes emitir el evento a los clientes si deseas notificar el cambio
         this.io.emit("power-control", { action });
       } else {
         console.log("No se encontró el dispositivo o no hubo cambios");
       }
     } catch (error) {
-      console.error("Error al actualizar el dispositivo:", error);
+      console.error("Error al guardar la acción en el dispositivo:", error);
     }
   }
+
   
   handleDeviceHistory(socket, data) {
     console.log(`Historial de dispositivo recibido de ${socket.id}:`, data);
