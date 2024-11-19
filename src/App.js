@@ -48,7 +48,7 @@ class App {
 
   async initialize() {
     try {
-      // Inicializar SocketManager primero
+      
       this.socketManager = new SocketManager(this.server);
       this.socketManager.initialize();
       console.log('Socket Manager inicializado correctamente');
