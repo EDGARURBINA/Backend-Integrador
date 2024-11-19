@@ -1,36 +1,45 @@
 import {Schema , model} from "mongoose";
 import Alert from "../models/Alert.js"
 
-const historySchema = new Schema ({
 
-    id:{
-        type: String,
-    
+const sensorDataSchema = new Schema({
+    value: {
+      type: Number,
+      required: true,
     },
-    temperatures: [{
-        type: Number
-    }],
-    humidities:[{
-        type: Number
-    }],
-    weights:[{
-        type: Number
-    }],
-    fruit:{
-        type: String
+    time: {
+      type: String,
+      required: true,
     },
-    automatic:{
-        type:Boolean
+  });
+
+const historySchema = new Schema({
+    id: {
+      type: String,
+      required: true,
     },
-    hours:{
-        type:Number
+    temperatures: [sensorDataSchema], 
+    humidities: [sensorDataSchema],   
+    weights: [sensorDataSchema],   
+    fruit: {
+      type: String,
+      required: true,
     },
-    minutes:{
-        type:Number
+    automatic: {
+      type: Boolean,
+      default: false,
     },
-    date:{
-        type:Date,
-        default: Date.now
+    hours: {
+      type: Number,
+      default: 0,
+    },
+    minutes: {
+      type: Number,
+      default: 0,
+    },
+    date: {
+      type: Date,
+      default: Date.now,
     },
     alerts: [{
         type: Object,  

@@ -1,7 +1,6 @@
 import amqp from 'amqplib';
 import { mqttConfig } from '../config/mqtt.js';
 import History from "../models/History.js";
-import Alert from '../models/Alert.js';
 import mongoose from 'mongoose';
 
 
@@ -99,46 +98,57 @@ class MqttService {
     }
   }
   
-  
-
   async saveHistory(message) {
     console.log("Guardando historial:", message);
-    try {  
-
-          // Verificar si message.data existe y tiene las propiedades necesarias
-    const temperatures = Array.isArray(message.data?.temperatures) ? message.data.temperatures : [message.data?.temperatures];
-    const humidities = Array.isArray(message.data?.humidities) ? message.data.humidities : [message.data?.humidities];
-    const weights = Array.isArray(message.data?.weights) ? message.data.weights : [message.data?.weights];
-
-
-      // Ahora que tienes los alertIds, proceder con la creación del historial
+    try {
+      // Mapear los datos de temperatura, humedad y peso para que incluyan el valor y el tiempo
+      const temperatures = (Array.isArray(message.data?.temperatures)
+        ? message.data.temperatures
+        : [message.data?.temperatures]
+      ).map((temp) => ({
+        value: temp,
+        time: message.timestamp || new Date().toISOString(), // Agrega el tiempo del mensaje o usa la fecha actual
+      }));
+  
+      const humidities = (Array.isArray(message.data?.humidities)
+        ? message.data.humidities
+        : [message.data?.humidities]
+      ).map((humidity) => ({
+        value: humidity,
+        time: message.timestamp || new Date().toISOString(),
+      }));
+  
+      const weights = (Array.isArray(message.data?.weights)
+        ? message.data.weights
+        : [message.data?.weights]
+      ).map((weight) => ({
+        value: weight,
+        time: message.timestamp || new Date().toISOString(),
+      }));
+  
+      // Crear una nueva instancia del historial con los datos procesados
       const newHistory = new History({
         id: message.device,
-        temperatures: temperatures,
-        humidities: humidities,
-        weights: weights,
-        fruit: message.data?.fruit || '',
+        temperatures, // Subdocumentos de SensorData
+        humidities,   // Subdocumentos de SensorData
+        weights,      // Subdocumentos de SensorData
+        fruit: message.data?.fruit || "",
         automatic: Boolean(message.data?.automatic),
         hours: Number(message.data?.hours) || 0,
         minutes: Number(message.data?.minutes) || 0,
-        alerts: this.alerts,  // Agregar las alertas procesadas al historial
-        notification: message.notification || {},  // Añadir la notificación al historial
-        date: new Date(message.timestamp)
+        alerts: this.alerts || [], // Agrega alertas procesadas o un arreglo vacío
+        date: new Date(message.timestamp), // Fecha del mensaje
       });
   
+      // Guardar el historial en la base de datos
       await newHistory.save();
-      console.log("Historial guardado correctamente con", this.alerts.length , "alertas y notificación.");
-  
-      // Broadcast
-      this.socketManager.broadcast('device', newHistory);
-      console.log("Evento 'device' emitido a los clientes");
-      this.resetAlerts();  // Aquí limpias el array de alertas
-
+      console.log("Historial guardado correctamente.");
     } catch (error) {
-      console.error("Error al guardar historial:", error);
-      throw error;
+      console.error("Error al guardar el historial:", error);
     }
   }
+
+  
   handleConnectionError(error) {
     console.error('Error en la conexión RabbitMQ:', error);
     setTimeout(() => this.connect(), mqttConfig.reconnectTimeout);
