@@ -2,15 +2,13 @@ import amqp from 'amqplib';
 import { mqttConfig } from '../config/mqtt.js';
 import History from "../models/History.js";
 import mongoose from 'mongoose';
-
+import Alert from '../models/Alert.js';
 
 class MqttService {
   constructor(socketManager) {
     this.socketManager = socketManager;
     this.connection = null;
     this.channel = null;
-
-
     this.alerts = []; // Array donde acumulamos las alertas
 
   }
