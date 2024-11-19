@@ -79,7 +79,7 @@ class App {
   }
 }       
 
-// Crear y inicializar la aplicación
+
 const app = new App();
 await app.initialize();
 

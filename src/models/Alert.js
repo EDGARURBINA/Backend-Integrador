@@ -16,7 +16,6 @@ const alertSchema = new Schema ({
         type:Date,
         default: Date.now
     },
-
     priority:{
         type: String,
         required:true

@@ -33,7 +33,7 @@ const historySchema = new Schema ({
         default: Date.now
     },
     alerts: [{
-        type: Object,  // Cambiar a 'Object' en lugar de 'ObjectId'
+        type: Object,  
     }],
 });
 
