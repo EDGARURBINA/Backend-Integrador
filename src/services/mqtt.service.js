@@ -2,7 +2,6 @@ import amqp from 'amqplib';
 import { mqttConfig } from '../config/mqtt.js';
 import History from "../models/History.js";
 import mongoose from 'mongoose';
-import Alert from '../models/Alert.js';
 
 
 class MqttService {
@@ -72,42 +71,33 @@ class MqttService {
     }
   }
 
-async handleNotification(message) {
-  if (message.notification) {
-    // Asegurarse de que el mensaje de notificación sea un array
-    const alerts = Array.isArray(message.notification) ? message.notification : [message.notification];
 
-    // Iteramos sobre cada alerta
-    for (const alert of alerts) {
-      const alertId = {
-        _id: new mongoose.Types.ObjectId(),  // Generar un ID único para cada alerta
-        ...alert,  // Copiar todas las propiedades de la alerta
-      };
-
-      // Guardar cada alerta en la colección Alert
-      try {
-        const newAlert = new Alert(alertId);  // Crear un nuevo documento de alerta
-        await newAlert.save();  // Guardar la alerta en la base de datos
-        console.log("Alerta guardada en la colección Alert:", newAlert);
-        
-        // Agregar el ID de la alerta al array de alertas procesadas
-        this.alerts.push(newAlert._id);
-      } catch (error) {
-        console.error("Error al guardar la alerta en la colección Alert:", error);
-      }
-    }
-
-    console.log("Alertas procesadas y agregadas al array this.alert:", this.alerts);
-    return this.alerts;  // Devolver los IDs de las alertas procesadas
-  } else {
-    console.error("No se recibió una notificación válida");
-    return [];  // Retornamos un array vacío si no hay notificación
-  }
-}
+  async handleNotification(message) {
+    if (message.notification) {
+      // Asegurarse de que el mensaje de notificación sea un array
+      const alerts = Array.isArray(message.notification) ? message.notification : [message.notification];
   
-
-
-
+      // Iteramos sobre cada alerta y la agregamos al arreglo `this.alert`
+      alerts.forEach(alert => {
+        const alertId = {
+          _id: new mongoose.Types.ObjectId(),  // Generar un ID único para cada alerta
+          ...alert  // Copiar todas las propiedades de la alerta
+        };
+        
+        // Agregar la alerta al array `this.alert`
+        this.alerts.push(alertId);
+  
+        console.log("Añadiendo alerta al array this.alert:", alertId);
+      });
+  
+      console.log("Alertas procesadas y agregadas al array this.alert:", this.alerts);
+      return this.alerts;  // Devolver las alertas procesadas
+    } else {
+      console.error("No se recibió una notificación válida");
+      return [];  // Retornamos un array vacío si no hay notificación
+    }
+  }
+  
   async saveHistory(message) {
     console.log("Guardando historial:", message);
     try {
