@@ -136,7 +136,7 @@ class MqttService {
         automatic: Boolean(message.data?.automatic),
         hours: Number(message.data?.hours) || 0,
         minutes: Number(message.data?.minutes) || 0,
-        alerts: this.alerts || [], // Agrega alertas procesadas o un arreglo vacío
+        alerts: this.alerts, // Agrega alertas procesadas o un arreglo vacío
         date: new Date(message.timestamp), // Fecha del mensaje
       });
   
