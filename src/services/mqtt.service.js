@@ -9,7 +9,7 @@ class MqttService {
     this.socketManager = socketManager;
     this.connection = null;
     this.channel = null;
-    this.alerts = []; // Array donde acumulamos las alertas
+    this.alerts = []; 
 
   }
 
@@ -75,14 +75,14 @@ class MqttService {
       // Asegurarse de que el mensaje de notificación sea un array
       const alerts = Array.isArray(message.notification) ? message.notification : [message.notification];
   
-      // Iteramos sobre cada alerta
+      /
       for (const alert of alerts) {
         const alertId = {
-          _id: new mongoose.Types.ObjectId(),  // Generar un ID único para cada alerta
+          _id: new mongoose.Types.ObjectId(),  
           ...alert,  // Copiar todas las propiedades de la alerta
         };
   
-        // Guardar cada alerta en la colección Alert
+        
         try {
           const newAlert = new Alert(alertId);  // Crear un nuevo documento de alerta
           await newAlert.save();  // Guardar la alerta en la base de datos
@@ -143,10 +143,10 @@ class MqttService {
         hours: Number(message.data?.hours) || 0,
         minutes: Number(message.data?.minutes) || 0,
         alerts: this.alerts, // Agrega alertas procesadas o un arreglo vacío
-        date: new Date(message.timestamp), // Fecha del mensaje
+        date: new Date(message.timestamp), 
       });
   
-      // Guardar el historial en la base de datos
+      
       await newHistory.save();
       console.log("Historial guardado correctamente.");
     } catch (error) {
