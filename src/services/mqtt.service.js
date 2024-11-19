@@ -129,9 +129,9 @@ class MqttService {
       // Crear una nueva instancia del historial con los datos procesados
       const newHistory = new History({
         id: message.device,
-        temperatures, // Subdocumentos de SensorData
-        humidities,   // Subdocumentos de SensorData
-        weights,      // Subdocumentos de SensorData
+        temperatures, 
+        humidities,   
+        weights,   
         fruit: message.data?.fruit || "",
         automatic: Boolean(message.data?.automatic),
         hours: Number(message.data?.hours) || 0,

@@ -23,7 +23,7 @@ const historySchema = new Schema({
     weights: [sensorDataSchema],   
     fruit: {
       type: String,
-      required: true,
+      default: "",
     },
     automatic: {
       type: Boolean,
