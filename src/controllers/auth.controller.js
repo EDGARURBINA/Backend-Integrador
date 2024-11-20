@@ -60,7 +60,6 @@ export const signUp = async (req, res) => {
     const { username, email, password, id_dispositivos, id, key, roles } = req.body;
 
     try {
-        
         const newUser = new User({
             username,
             email,
@@ -68,21 +67,18 @@ export const signUp = async (req, res) => {
             id_dispositivos,
             id,
             key,
-            roles: []  
+            roles: []
         });
 
-        
         if (roles && roles.length > 0) {
             const foundRoles = await Role.find({ name: { $in: roles } });
 
-            
             if (foundRoles.length !== roles.length) {
                 return res.status(400).json({ message: "Uno o más roles no existen." });
             }
 
             newUser.roles = foundRoles.map(role => role._id);
         } else {
-       
             const defaultRole = await Role.findOne({ name: "User" });
             if (defaultRole) {
                 newUser.roles = [defaultRole._id];
@@ -90,14 +86,17 @@ export const signUp = async (req, res) => {
         }
 
         const savedUser = await newUser.save();
+
+        // Generar el token
         const token = jwt.sign(
-            { id: savedUser._id, username: savedUser.username }, 
-            config.SECRET, 
-            { expiresIn: 86400 } 
+            { id: savedUser._id, username: savedUser.username }, // Información dentro del token
+            config.SECRET, // Clave secreta
+            { expiresIn: 86400 } // Expiración: 24 horas (86400 segundos)
         );
 
-        // Responder solo con el token
+        // Enviar solo el token como respuesta
         res.status(201).json({ token });
+
         console.log("Nuevo usuario creado:", savedUser);
     } catch (error) {
         console.error("Error en signUp:", error);
