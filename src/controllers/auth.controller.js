@@ -82,7 +82,7 @@ export const signUp = async (req, res) => {
 
             newUser.roles = foundRoles.map(role => role._id);
         } else {
-        //si ni se encuentra el rol especificado le asigna User por defecto
+       
             const defaultRole = await Role.findOne({ name: "User" });
             if (defaultRole) {
                 newUser.roles = [defaultRole._id];
@@ -90,8 +90,15 @@ export const signUp = async (req, res) => {
         }
 
         const savedUser = await newUser.save();
-        res.status(200).json({ user: savedUser });
+        const token = jwt.sign(
+            { id: savedUser._id, username: savedUser.username }, 
+            config.SECRET, 
+            { expiresIn: 86400 } 
+        );
 
+        // Responder solo con el token
+        res.status(201).json({ token });
+        res.status(200).json({ user: savedUser });
         console.log("Nuevo usuario creado:", savedUser);
     } catch (error) {
         console.error("Error en signUp:", error);
