@@ -98,7 +98,6 @@ export const signUp = async (req, res) => {
 
         // Responder solo con el token
         res.status(201).json({ token });
-        res.status(200).json({ user: savedUser });
         console.log("Nuevo usuario creado:", savedUser);
     } catch (error) {
         console.error("Error en signUp:", error);
