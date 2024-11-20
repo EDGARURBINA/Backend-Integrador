@@ -75,7 +75,7 @@ class MqttService {
       // Asegurarse de que el mensaje de notificación sea un array
       const alerts = Array.isArray(message.notification) ? message.notification : [message.notification];
   
-      /
+      
       for (const alert of alerts) {
         const alertId = {
           _id: new mongoose.Types.ObjectId(),  
@@ -113,7 +113,7 @@ class MqttService {
         : [message.data?.temperatures]
       ).map((temp) => ({
         value: temp,
-        time: message.timestamp || new Date().toISOString(), // Agrega el tiempo del mensaje o usa la fecha actual
+        time: message.timestamp || new Date().toISOString(), l
       }));
   
       const humidities = (Array.isArray(message.data?.humidities)
@@ -133,7 +133,7 @@ class MqttService {
       }));
   
       // Crear una nueva instancia del historial con los datos procesados
-      const newHistory = new History({
+      const newHistory = new History({ 
         id: message.device,
         temperatures, 
         humidities,   

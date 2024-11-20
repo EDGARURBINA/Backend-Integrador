@@ -9,7 +9,7 @@ const userSchema = new Schema({
     },
     id_dispositivos: [{
         type: String,
-        required: true,
+        
     }],
     email:{
         type: String,
