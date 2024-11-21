@@ -30,11 +30,11 @@ const userSchema = new Schema({
             questionId: {
                 type: Schema.Types.ObjectId,
                 ref: 'Question', 
-                required: true
+            
             },
             answer: {
                 type: String,
-                required: true
+            
             }
         }
     ],
