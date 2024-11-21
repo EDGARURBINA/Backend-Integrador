@@ -43,43 +43,45 @@ export const updateAdmin = async (req, res) => {
 };
 
 
-export const singin = async (req, res) => {
+export const signin = async (req, res) => {
     try {
-        const adminFound = await User.findOne({ email: req.body.email }).populate("roles");
+        // Buscar al usuario por email
+        const userFound = await User.findOne({ email: req.body.email }).populate("roles");
 
-        if (!adminFound) {
+        if (!userFound) {
             return res.status(404).json({ error: true, message: "Usuario no encontrado." });
         }
 
-        const matchPassword = await User.comparePassword(req.body.password, adminFound.password);
-
+        // Comparar la contraseña proporcionada
+        const matchPassword = await User.comparePassword(req.body.password, userFound.password);
         if (!matchPassword) {
             return res.status(403).json({ error: true, message: "Contraseña incorrecta." });
         }
 
         // Generar el token JWT
-        const token = jwt.sign({ id: adminFound._id }, config.SECRET, {
-            expiresIn: 86400 // 24 horas
+        const token = jwt.sign({ id: userFound._id }, config.SECRET, {
+            expiresIn: 86400, // 24 horas
         });
 
-        // Enviar la respuesta con los datos del usuario
+        // Construir el objeto de usuario para la respuesta
+        const userData = {
+            username: userFound.username,
+            email: userFound.email,
+            id_dispositivos: userFound.id_dispositivos,
+        };
+
+        // Responder con el token y los datos del usuario
         res.status(200).json({
             error: false,
             token: token,
             path: '/AdminEntrepreneurs',
-            user: {
-                id: adminFound._id,
-                email: adminFound.email,
-                username: adminFound.name, 
-                roles: adminFound.roles.map(role => role.name), 
-            }
+            user: userData,
         });
     } catch (error) {
         console.error("Error en el proceso de inicio de sesión:", error);
         res.status(500).json({ error: true, message: "Error interno del servidor." });
     }
 };
-
 
 export const signUp = async (req, res) => {
     const { username, email, password, id_dispositivos, id, key, roles } = req.body;
