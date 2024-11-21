@@ -44,17 +44,39 @@ export const updateAdmin = async (req, res) => {
 
 
 export const singin = async (req, res) => {
-    const adminFound = await User.findOne({ email: req.body.email }).populate("roles");
-    let token = '';
-    if (adminFound) {
-        const matchPassword = await User.comparePassword(req.body.password, adminFound.password)
-        if (!matchPassword) res.status(403).json({ error: true, message: "Contraseña incorrecta." })
-        token = jwt.sign({ id: adminFound._id }, config.SECRET, {
-            expiresIn: 86400
+    try {
+        const adminFound = await User.findOne({ email: req.body.email }).populate("roles");
+
+        if (!adminFound) {
+            return res.status(404).json({ error: true, message: "Usuario no encontrado." });
+        }
+
+        const matchPassword = await User.comparePassword(req.body.password, adminFound.password);
+
+        if (!matchPassword) {
+            return res.status(403).json({ error: true, message: "Contraseña incorrecta." });
+        }
+
+        // Generar el token JWT
+        const token = jwt.sign({ id: adminFound._id }, config.SECRET, {
+            expiresIn: 86400 // 24 horas
         });
-        res.status(200).json({ error: false, token: token, path: '/AdminEntrepreneurs' })
-    } else {
-        res.json({ error: true, message: "Usuario no encontrado." })
+
+        // Enviar la respuesta con los datos del usuario
+        res.status(200).json({
+            error: false,
+            token: token,
+            path: '/AdminEntrepreneurs',
+            user: {
+                id: adminFound._id,
+                email: adminFound.email,
+                username: adminFound.name, 
+                roles: adminFound.roles.map(role => role.name), 
+            }
+        });
+    } catch (error) {
+        console.error("Error en el proceso de inicio de sesión:", error);
+        res.status(500).json({ error: true, message: "Error interno del servidor." });
     }
 };
 
