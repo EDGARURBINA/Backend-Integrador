@@ -96,24 +96,14 @@ export const getDeviceHistory = async (req, res) => {
 
 export const addManualHistory = async (req, res) => {
     try {
-      // Extraer los datos del cuerpo de la solicitud
       const { device, timestamp, data } = req.body;
   
-      console.log("Datos recibidos:", { device, timestamp, data });  // Mostrar los datos recibidos
-  
-      // Verificar si todos los datos necesarios están presentes
+      // Verificar que los datos sean válidos
       if (!device || !timestamp || !data) {
         return res.status(400).json({ message: "Datos incompletos." });
       }
   
-      // Buscar el dispositivo por el ID
-      const foundDevice = await Device.findOne({ id: device });
-  
-      if (!foundDevice) {
-        return res.status(404).json({ message: "Dispositivo no encontrado." });
-      }
-  
-      // Crear un nuevo historial
+      // Crear un nuevo historial con los datos completos
       const newHistory = new History({
         id: device,
         temperatures: data.temperatures || [],
@@ -123,22 +113,30 @@ export const addManualHistory = async (req, res) => {
         automatic: data.automatic || false,
         hours: data.hours || 0,
         minutes: data.minutes || 0,
-        alerts: [], // Si no tienes alertas, puedes dejarlo vacío o como un arreglo vacío
-        date: new Date(timestamp || Date.now()),
+        alerts: [],  // Si no hay alertas, puedes dejarlo vacío
+        date: new Date(timestamp || Date.now()), 
       });
   
-      // Guardar el historial en la base de datos
+      // Guardar el historial
       await newHistory.save();
   
-      // Asociar el historial al dispositivo
+      // Actualizar el dispositivo, agregando el historial
+      const foundDevice = await Device.findOne({ id: device });
+      if (!foundDevice) {
+        return res.status(404).json({ message: "Dispositivo no encontrado." });
+      }
+  
+      // Agregar el nuevo historial al dispositivo
       foundDevice.histories.push(newHistory._id);
       await foundDevice.save();
   
-      // Responder con éxito
-      res.status(200).json({ message: "Historial manual guardado correctamente." });
+      // Enviar el historial completo en la respuesta
+      res.status(200).json({
+        message: "Historial manual guardado correctamente.",
+        history: newHistory,  // Aquí devolvemos el historial completo
+      });
     } catch (error) {
       console.error("Error al guardar el historial manualmente:", error);
-      // Responder con el mensaje del error detallado
       res.status(500).json({ error: true, message: error.message || "Error al guardar el historial manualmente." });
     }
   };
