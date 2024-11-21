@@ -63,6 +63,7 @@ export const signin = async (req, res) => {
         });
 
         // Buscar los dispositivos asociados al usuario
+        // Si id_dispositivos contiene los "id" de los dispositivos, puedes hacer una consulta por "id".
         const devices = await Device.find({ id: { $in: userFound.id_dispositivos } }).populate("histories");
 
         // Construir el objeto de usuario para la respuesta
@@ -78,8 +79,14 @@ export const signin = async (req, res) => {
             automatization: device.automatization,
             temperature: device.temperature,
             humidity: device.humidity,
-            histories: device.histories, // Incluye los historiales ya poblados
-            // Incluye otros campos que sean relevantes
+            // Poblamos el campo histories si es necesario
+            histories: device.histories.map(history => ({
+                historyId: history._id,
+                // Agrega aquí más detalles de los historiales si es necesario
+                temperature: history.temperature,
+                timestamp: history.timestamp
+            })),
+            // Puedes agregar otros campos del dispositivo aquí también
         }));
 
         // Responder con el token, los datos del usuario y los dispositivos
