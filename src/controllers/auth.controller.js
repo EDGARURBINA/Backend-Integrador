@@ -5,8 +5,6 @@ import config from "../config.js"
 import Question from "../models/Question.js";
 
 
-
-
 export const validatePassword = async (req, res) => {
     const { password } = req.body;
     try {

@@ -4,7 +4,7 @@ import * as authCtrl from "../controllers/auth.controller.js";
 const router = Router();
 
 router.post('/signup', authCtrl.signUp);
-router.post('/signin', authCtrl.singin);
+router.post('/signin', authCtrl.signin);
 router.post('/recover-password', authCtrl.recoverPassword);
 
 export default router;
