@@ -188,3 +188,32 @@ export const recoverPassword = async (req, res) => {
         res.status(500).json({ message: "Error al recuperar la contraseña." });
     }
 };
+
+
+
+export const updateUserDevice = async (req, res) => {
+    const { id } = req.params; // Obtén el ID del usuario desde los parámetros de la URL
+    const { id_dispositivos } = req.body; // Obtén el nuevo dispositivo desde el body
+
+    try {
+        // Busca el usuario por su ID
+        const userFound = await User.findOne({ id: id });
+
+        if (!userFound) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
+
+        // Actualiza el ID del dispositivo
+        userFound.id_dispositivos = id_dispositivos;
+
+        // Guarda los cambios
+        await userFound.save();
+
+        res.status(200).json({
+            message: "Dispositivo actualizado correctamente",
+            user: userFound
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Hubo un error al actualizar el dispositivo", error: error.message });
+    }
+};
