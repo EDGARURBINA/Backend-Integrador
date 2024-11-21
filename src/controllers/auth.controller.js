@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import Role from "../models/Role.js";
 import config from "../config.js"
+import Device from "../models/Device.js";
 import Question from "../models/Question.js";
 
 
