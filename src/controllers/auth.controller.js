@@ -61,6 +61,9 @@ export const signin = async (req, res) => {
             expiresIn: 86400, // 24 horas
         });
 
+        // Buscar los dispositivos asociados al usuario
+        const devices = await Device.find({ id: { $in: userFound.id_dispositivos } }).populate("histories");
+
         // Construir el objeto de usuario para la respuesta
         const userData = {
             username: userFound.username,
@@ -68,12 +71,23 @@ export const signin = async (req, res) => {
             id_dispositivos: userFound.id_dispositivos,
         };
 
-        // Responder con el token y los datos del usuario
+        // Construir los datos de dispositivos y sus historiales
+        const deviceData = devices.map(device => ({
+            id: device.id,
+            automatization: device.automatization,
+            temperature: device.temperature,
+            humidity: device.humidity,
+            histories: device.histories, // Incluye los historiales ya poblados
+            // Incluye otros campos que sean relevantes
+        }));
+
+        // Responder con el token, los datos del usuario y los dispositivos
         res.status(200).json({
             error: false,
             token: token,
             path: '/AdminEntrepreneurs',
             user: userData,
+            devices: deviceData,
         });
     } catch (error) {
         console.error("Error en el proceso de inicio de sesión:", error);
