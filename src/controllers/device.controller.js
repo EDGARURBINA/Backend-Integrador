@@ -72,20 +72,18 @@ export const getDeviceById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
 export const getDeviceHistory = async (req, res) => {
     try {
         const { id } = req.params;
         
-        
-        const device = await Device.findOne({ id: id });
+        // Buscar el dispositivo usando su ID
+        const device = await Device.findOne({ id: id }).populate("histories"); // Usa .populate() aquí
         if (!device) {
             return res.status(404).json({ message: "Dispositivo no encontrado" });
         }
 
-        // Buscar los historiales relacionados con el dispositivo usando el ID
-        const histories = await History.find({ id: device.id });
-        res.json(histories);
+        // Responder con los historiales completos
+        res.json(device.histories); // Aquí estamos enviando los historiales completos
     } catch (error) {
         console.error("Error al obtener el historial del dispositivo:", error);
         res.status(500).json({ message: error.message });
