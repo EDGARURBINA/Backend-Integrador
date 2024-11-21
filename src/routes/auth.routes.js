@@ -5,5 +5,6 @@ const router = Router();
 
 router.post('/signup', authCtrl.signUp);
 router.post('/signin', authCtrl.singin);
+router.post('/recover-password', authCtrl.recoverPassword);
 
 export default router;

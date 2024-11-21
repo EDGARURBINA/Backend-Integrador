@@ -2,6 +2,9 @@ import app from './app.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { createRoles } from './libs/inicialSetup.js';
+import addPredefinedQuestions from "./libs/addPredefinedQuestions.js"
+
+
 
 dotenv.config();
 
@@ -11,7 +14,10 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(async () => {
     console.log('Conectado a MongoDB');
     
+    addPredefinedQuestions();
+
     await createRoles(); 
+    
     
     const server = app;
     const PORT = process.env.PORT || 3000;

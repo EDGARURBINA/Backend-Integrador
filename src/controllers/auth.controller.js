@@ -2,6 +2,9 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import Role from "../models/Role.js";
 import config from "../config.js"
+import Question from "../models/Question.js";
+
+
 
 
 export const validatePassword = async (req, res) => {
@@ -89,9 +92,9 @@ export const signUp = async (req, res) => {
 
         // Generar el token
         const token = jwt.sign(
-            { id: savedUser._id, username: savedUser.username }, // Información dentro del token
-            config.SECRET, // Clave secreta
-            { expiresIn: 86400 } // Expiración: 24 horas (86400 segundos)
+            { id: savedUser._id, username: savedUser.username }, 
+            config.SECRET, 
+            { expiresIn: 86400 } 
         );
 
         // Enviar solo el token como respuesta
@@ -101,5 +104,43 @@ export const signUp = async (req, res) => {
     } catch (error) {
         console.error("Error en signUp:", error);
         res.status(500).json({ message: "Error al crear el usuario" });
+    }
+};
+
+
+
+
+export const recoverPassword = async (req, res) => {
+    const { email, questionId, answer, newPassword } = req.body;
+
+    try {
+        // Buscar al usuario por su correo y poblar las preguntas asociadas en 'key'
+        const user = await User.findOne({ email }).populate('key.questionId');
+
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado." });
+        }
+
+        // Buscar la pregunta y respuesta del usuario
+        const questionAnswer = user.key.find(item => item.questionId._id.toString() === questionId);
+
+        if (!questionAnswer) {
+            return res.status(404).json({ message: "Pregunta no encontrada." });
+        }
+
+        // Comparar la respuesta
+        if (questionAnswer.answer !== answer) {
+            return res.status(401).json({ message: "Respuesta incorrecta." });
+        }
+
+        // Si la respuesta es correcta, actualizar la contraseña
+        user.password = await User.encryptPassword(newPassword);
+        await user.save();
+
+        res.status(200).json({ message: "Contraseña actualizada exitosamente." });
+
+    } catch (error) {
+        console.error("Error en recoverPassword:", error);
+        res.status(500).json({ message: "Error al recuperar la contraseña." });
     }
 };

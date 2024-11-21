@@ -24,10 +24,21 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
-    key:{
-        type: String,
-        required: true,
-    },
+    
+    key: [
+        {
+            questionId: {
+                type: Schema.Types.ObjectId,
+                ref: 'Question', 
+                required: true
+            },
+            answer: {
+                type: String,
+                required: true
+            }
+        }
+    ],
+
     roles: [{
         type: Schema.Types.ObjectId, 
         ref: 'Role', 
