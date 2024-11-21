@@ -79,11 +79,7 @@ export const signin = async (req, res) => {
             hours: device.hours,
             minutes: device.minutes,
             pause: device.pause,
-            histories: device.histories.map(history => ({
-                historyId: history._id,
-                temperature: history.temperature,
-                timestamp: history.timestamp
-            })),
+            histories: device.histories,  // Ahora se devuelven los historiales completos
         }));
 
         // Construir el objeto de usuario para la respuesta
