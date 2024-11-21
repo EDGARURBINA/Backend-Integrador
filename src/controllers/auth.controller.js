@@ -63,8 +63,28 @@ export const signin = async (req, res) => {
         });
 
         // Buscar los dispositivos asociados al usuario
-        // Si id_dispositivos contiene los "id" de los dispositivos, puedes hacer una consulta por "id".
         const devices = await Device.find({ id: { $in: userFound.id_dispositivos } }).populate("histories");
+
+        // Construir el objeto de dispositivos para la respuesta
+        const deviceData = devices.map(device => ({
+            id: device.id,
+            automatization: device.automatization,
+            temperature: device.temperature,
+            humidity: device.humidity,
+            pre_set: device.pre_set,
+            weight: device.weight,
+            airPurity: device.airPurity,
+            hours_actual: device.hours_actual,
+            minute_actual: device.minute_actual,
+            hours: device.hours,
+            minutes: device.minutes,
+            pause: device.pause,
+            histories: device.histories.map(history => ({
+                historyId: history._id,
+                temperature: history.temperature,
+                timestamp: history.timestamp
+            })),
+        }));
 
         // Construir el objeto de usuario para la respuesta
         const userData = {
@@ -73,36 +93,19 @@ export const signin = async (req, res) => {
             id_dispositivos: userFound.id_dispositivos,
         };
 
-        // Construir los datos de dispositivos y sus historiales
-        const deviceData = devices.map(device => ({
-            id: device.id,
-            automatization: device.automatization,
-            temperature: device.temperature,
-            humidity: device.humidity,
-            // Poblamos el campo histories si es necesario
-            histories: device.histories.map(history => ({
-                historyId: history._id,
-                // Agrega aquí más detalles de los historiales si es necesario
-                temperature: history.temperature,
-                timestamp: history.timestamp
-            })),
-            // Puedes agregar otros campos del dispositivo aquí también
-        }));
-
         // Responder con el token, los datos del usuario y los dispositivos
         res.status(200).json({
             error: false,
             token: token,
-            path: '/AdminEntrepreneurs',
+            path: '/AdminEntrepreneurs',  // Redirige a la ruta deseada en tu frontend
             user: userData,
-            devices: deviceData,
+            devices: deviceData,  // Dispositivos con sus historiales
         });
     } catch (error) {
         console.error("Error en el proceso de inicio de sesión:", error);
         res.status(500).json({ error: true, message: "Error interno del servidor." });
     }
 };
-
 export const signUp = async (req, res) => {
     const { username, email, password, id_dispositivos, id, key, roles } = req.body;
 
