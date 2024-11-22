@@ -32,7 +32,6 @@ class SocketManager {
       socket.on("message", (data) => this.handleClientMessage(socket, data));
       socket.on("device", (data) => this.handleDeviceHistory(socket, data)); 
       socket.on("disconnect", () => this.handleDisconnect(socket));
-
       socket.on("real-time-data", (data) => this.handleRealTimeData(data));
 
     });
@@ -99,6 +98,63 @@ class SocketManager {
   sendMessage(socket, message) {
     socket.emit("message", message);
   }
+
+
+  async handleMessage(queueType, message) {
+    if (!message) return;
+
+    try {
+        const receivedMessage = JSON.parse(message.content.toString());
+
+        if (queueType === 'history') {
+            await this.saveHistory(receivedMessage);
+        } else if (queueType === 'notifications') {
+            await this.handleNotification(receivedMessage);
+        } else if (queueType === 'sensorData') {
+            const {
+                humidity_actual,
+                temperature_actual,
+                hours_actual,
+                minute_actual,
+                weight,
+            } = receivedMessage;
+
+            if (
+                humidity_actual !== undefined &&
+                temperature_actual !== undefined &&
+                hours_actual !== undefined &&
+                minute_actual !== undefined &&
+                weight !== undefined
+            ) {
+                // Transmitir datos a través de WebSocket
+                this.socketManager.broadcast('sensorData', {
+                    humidity_actual,
+                    temperature_actual,
+                    hours_actual,
+                    minute_actual,
+                    weight,
+                });
+            }
+        }
+
+        this.channel.ack(message); // Confirmar que se procesó el mensaje
+    } catch (error) {
+        console.error('Error al procesar mensaje:', error);
+        this.channel.ack(message);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
   handleClientMessage(socket, data) {
     console.log(`Mensaje recibido de ${socket.id}:`, data);
@@ -180,5 +236,8 @@ class SocketManager {
     this.connectedClients.delete(socket.id);
   }
 }
+
+
+
 
 export default SocketManager;

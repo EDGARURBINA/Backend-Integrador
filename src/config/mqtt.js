@@ -6,5 +6,6 @@ export const mqttConfig = {
   password: 'leedpees',
   queueHistory: 'history',  
   queueNotifications: 'notifications',  
+  queueSensorData:'sensordata',
   reconnectTimeout: 2000
 }
