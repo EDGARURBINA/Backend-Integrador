@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import Device from "../models/Device.js";
+import History from "../models/History.js";
 
 class SocketManager {
   constructor(server) {

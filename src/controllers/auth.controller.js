@@ -81,7 +81,7 @@ export const signin = async (req, res) => {
             hours: device.hours,
             minutes: device.minutes,
             pause: device.pause,
-            histories: device.histories,  // Ahora se devuelven los historiales completos
+            histories: device.histories,  
         }));
 
         // Construir el objeto de usuario para la respuesta
