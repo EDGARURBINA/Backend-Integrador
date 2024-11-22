@@ -107,6 +107,11 @@ class MqttService {
   async saveHistory(message) {
     console.log("Guardando historial:", message);
     try {
+          //  valores de temperature_actual y humidity_actual desde el mensaje
+    const temperature_actual = message.data?.temperature_actual;
+    const humidity_actual = message.data?.humidity_actual;
+
+    
       // Mapear los datos de temperatura, humedad y peso para que incluyan el valor y el tiempo
       const temperatures = (Array.isArray(message.data?.temperatures)
         ? message.data.temperatures
@@ -137,6 +142,8 @@ class MqttService {
         id: message.device,
         temperatures, 
         humidities,   
+        temperature_actual,
+        humidity_actual,
         weights,   
         fruit: message.data?.fruit || "",
         automatic: Boolean(message.data?.automatic),

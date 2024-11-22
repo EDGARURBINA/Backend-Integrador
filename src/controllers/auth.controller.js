@@ -71,6 +71,8 @@ export const signin = async (req, res) => {
             automatization: device.automatization,
             temperature: device.temperature,
             humidity: device.humidity,
+            temperature_actual: device.temperature_actual,
+            humidity_actual: device.humidity_actual,
             pre_set: device.pre_set,
             weight: device.weight,
             airPurity: device.airPurity,

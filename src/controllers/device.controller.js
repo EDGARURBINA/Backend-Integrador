@@ -1,6 +1,6 @@
 import Device from "../models/Device.js"
 import History from "../models/History.js"
-import User from "../models/User.js";
+
 
 export const createDevice = async (req, res) => {
     try {

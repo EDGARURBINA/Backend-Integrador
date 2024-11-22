@@ -9,6 +9,14 @@ const deviceSchema = new Schema({
     automatization: {
         type: Boolean
     },
+    temperature_actual:{
+        type: Number
+
+    },
+    humidity_actual:{
+        type: Number
+
+    },
     temperature: {
         type: Number, 
     },

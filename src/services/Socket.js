@@ -27,10 +27,59 @@ class SocketManager {
       });
       
       socket.on("togglePower", (data) => this.handleTogglePower(socket, data));
+      socket.on("toggleProcess", (data) => this.handleToggleProcess(socket, data));
       socket.on("message", (data) => this.handleClientMessage(socket, data));
       socket.on("device", (data) => this.handleDeviceHistory(socket, data)); 
       socket.on("disconnect", () => this.handleDisconnect(socket));
+
     });
+  }
+
+
+
+  async handleToggleProcess(socket, data) {
+    console.log(`Comando de proceso recibido de ${socket.id}:`, data);
+  
+    try {
+      const device = await Device.findOne({ id: data.id });
+  
+      if (!device) {
+        console.log(`No se encontró el dispositivo con ID: ${data.id}`);
+        return;
+      }
+  
+      const newProcessState = data.process !== undefined ? data.process : !device.process;
+  
+      const result = await Device.findOneAndUpdate(
+        { id: data.id },
+        { $set: { process: newProcessState } },
+        { new: true }
+      );
+  
+      if (result) {
+        console.log(`Proceso del dispositivo ${data.id} ${result.process ? 'iniciado' : 'detenido'}`);
+  
+        // Guardar historial al cambiar el estado del proceso
+        const newHistory = new History({
+          deviceId: data.id,
+          historyData: {
+            processState: result.process,
+            timestamp: new Date(),
+          },
+          timestamp: new Date(),
+        });
+        await newHistory.save();
+        console.log("Historial de proceso guardado correctamente.");
+  
+        // Emitir el estado del proceso al cliente
+        this.broadcast("process-control", {
+          id: data.id,
+          process: result.process,
+        });
+      }
+    } catch (error) {
+      console.error("Error al actualizar el dispositivo:", error);
+    }
   }
 
   // Método utilizado por MqttService para broadcast de eventos
@@ -93,23 +142,31 @@ class SocketManager {
     }
   }
 
-  handleDeviceHistory(socket, data) {
+  async handleDeviceHistory(socket, data) {
     console.log(`Historial de dispositivo recibido de ${socket.id}:`, data);
-    
-    const deviceHistory = {
-      deviceId: data.deviceId,
-      historyData: data.historyData, 
-    };
-    
-    this.sendMessage(socket, {
-      msg: "Historial de dispositivo recibido",
-      deviceHistory: deviceHistory,
-      timestamp: new Date(),
-    });
-
-    this.broadcast("deviceHistory", deviceHistory);
+  
+    // Guardar el historial en la base de datos
+    try {
+      const newHistory = new History({
+        deviceId: data.deviceId,
+        historyData: data.historyData,
+        timestamp: new Date(),
+      });
+      await newHistory.save();
+      console.log("Historial guardado correctamente.");
+  
+      // Enviar confirmación al cliente
+      this.sendMessage(socket, {
+        msg: "Historial de dispositivo guardado",
+        timestamp: new Date(),
+      });
+    } catch (error) {
+      console.error("Error al guardar el historial:", error);
+    }
+  
+    // Emitir el historial de vuelta a otros clientes si es necesario
+    this.broadcast("deviceHistory", data);
   }
-
   handleDisconnect(socket) {
     console.log(`Cliente desconectado - ID: ${socket.id}`);
     this.connectedClients.delete(socket.id);
