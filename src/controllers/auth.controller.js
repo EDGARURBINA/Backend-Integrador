@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import Role from "../models/Role.js";
 import config from "../config.js"
 import Device from "../models/Device.js";
-import Question from "../models/Question.js";
+
 
 
 export const validatePassword = async (req, res) => {

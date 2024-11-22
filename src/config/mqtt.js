@@ -6,5 +6,5 @@ export const mqttConfig = {
   password: 'leedpees',
   queueHistory: 'history',  
   queueNotifications: 'notifications',  
-  reconnectTimeout: 5000
+  reconnectTimeout: 2000
 }
