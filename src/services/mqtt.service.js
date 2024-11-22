@@ -36,7 +36,7 @@ class MqttService {
 
       this.channel.consume(mqttConfig.queueHistory, this.handleMessage.bind(this, 'history'), { noAck: false });
       this.channel.consume(mqttConfig.queueNotifications, this.handleMessage.bind(this, 'notifications'), { noAck: false });
-      this.channel.consume(mqttConfig.queueNotifications, this.handleMessage.bind(this, 'sensordata'), { noAck: false });
+      this.channel.consume(mqttConfig.queueSensorData, this.handleMessage.bind(this, 'sensordata'), { noAck: false });
 
       console.log(`Escuchando las colas ${mqttConfig.queueHistory} y ${mqttConfig.queueNotifications}`);
     } catch (error) {
@@ -69,6 +69,7 @@ class MqttService {
       this.channel.ack(message);
     }
   }
+    
 
 
   async handleNotification(message) {

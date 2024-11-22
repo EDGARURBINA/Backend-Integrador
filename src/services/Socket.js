@@ -110,13 +110,15 @@ class SocketManager {
             await this.saveHistory(receivedMessage);
         } else if (queueType === 'notifications') {
             await this.handleNotification(receivedMessage);
-        } else if (queueType === 'sensorData') {
+        } else if (queueType === 'sensordata') {
             const {
                 humidity_actual,
                 temperature_actual,
                 hours_actual,
                 minute_actual,
                 weight,
+                airPurity,
+                
             } = receivedMessage;
 
             if (
@@ -125,14 +127,17 @@ class SocketManager {
                 hours_actual !== undefined &&
                 minute_actual !== undefined &&
                 weight !== undefined
+
+                
             ) {
                 // Transmitir datos a través de WebSocket
-                this.socketManager.broadcast('sensorData', {
+                this.socketManager.broadcast('real-time-data', {
                     humidity_actual,
                     temperature_actual,
                     hours_actual,
                     minute_actual,
                     weight,
+                    airPurity
                 });
             }
         }
