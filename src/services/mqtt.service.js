@@ -33,6 +33,8 @@ class MqttService {
       this.channel = await this.connection.createChannel();
       await this.channel.assertQueue(mqttConfig.queueHistory, { durable: true });
       await this.channel.assertQueue(mqttConfig.queueNotifications, { durable: true });
+      await this.channel.assertQueue(mqttConfig.queueSensorData, { durable: true });
+
 
       this.channel.consume(mqttConfig.queueHistory, this.handleMessage.bind(this, 'history'), { noAck: false });
       this.channel.consume(mqttConfig.queueNotifications, this.handleMessage.bind(this, 'notifications'), { noAck: false });

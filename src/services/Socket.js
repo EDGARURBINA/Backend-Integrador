@@ -143,6 +143,7 @@ class SocketManager {
         }
 
         this.channel.ack(message); // Confirmar que se procesó el mensaje
+        console.log(message)
     } catch (error) {
         console.error('Error al procesar mensaje:', error);
         this.channel.ack(message);
