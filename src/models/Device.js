@@ -17,6 +17,10 @@ const deviceSchema = new Schema({
         type: Number
 
     },
+    process: {
+        type: Boolean,
+        default: false,
+      },
     temperature: {
         type: Number, 
     },
