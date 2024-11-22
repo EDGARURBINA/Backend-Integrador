@@ -16,7 +16,7 @@ const sensorDataSchema = new Schema({
 const historySchema = new Schema({
     id: {
       type: String,
-      required: true,
+      
     },
     temperatures: [sensorDataSchema], 
     humidities: [sensorDataSchema],   
