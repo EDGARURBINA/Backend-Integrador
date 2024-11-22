@@ -111,14 +111,14 @@ class MqttService {
     const temperature_actual = message.data?.temperature_actual;
     const humidity_actual = message.data?.humidity_actual;
 
-    
+
       // Mapear los datos de temperatura, humedad y peso para que incluyan el valor y el tiempo
       const temperatures = (Array.isArray(message.data?.temperatures)
         ? message.data.temperatures
         : [message.data?.temperatures]
       ).map((temp) => ({
         value: temp,
-        time: message.timestamp || new Date().toISOString(), l
+        time: message.timestamp || new Date().toISOString(), 
       }));
   
       const humidities = (Array.isArray(message.data?.humidities)
