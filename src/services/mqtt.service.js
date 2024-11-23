@@ -47,60 +47,6 @@ class MqttService {
     }
   }
 
-  async handleMessage(queueType, message) {
-    if (!message) return;
-
-    try {
-        const receivedMessage = JSON.parse(message.content.toString());
-
-        if (queueType === 'history') {
-            await this.saveHistory(receivedMessage);
-        } else if (queueType === 'notifications') {
-            await this.handleNotification(receivedMessage);
-        } else if (queueType === 'sensordata') {
-            const {
-                humidity_actual,
-                temperature_actual,
-                hours_actual,
-                minute_actual,
-                weight,
-                airPurity,
-                
-            } = receivedMessage;
-
-            if (
-                humidity_actual !== undefined &&
-                temperature_actual !== undefined &&
-                hours_actual !== undefined &&
-                minute_actual !== undefined &&
-                weight !== undefined
-
-                
-            ) {
-                // Transmitir datos a través de WebSocket
-                this.socketManager.broadcast('real-time-data', {
-                    humidity_actual,
-                    temperature_actual,
-                    hours_actual,
-                    minute_actual,
-                    weight,
-                    airPurity
-                });
-            }
-        }
-
-        this.channel.ack(message); // Confirmar que se procesó el mensaje
-        console.log(message)
-    } catch (error) {
-        console.error('Error al procesar mensaje:', error);
-        this.channel.ack(message);
-    }
-}
-
-
-    
-
-
   async handleNotification(message) {
     if (message.notification) {
       // Asegurarse de que el mensaje de notificación sea un array

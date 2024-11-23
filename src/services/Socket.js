@@ -150,18 +150,6 @@ class SocketManager {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
   handleClientMessage(socket, data) {
     console.log(`Mensaje recibido de ${socket.id}:`, data);
     
