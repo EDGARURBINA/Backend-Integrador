@@ -37,13 +37,6 @@ class SocketManager {
     });
   }
 
-  handleRealTimeData(data) {
-    console.log("Datos en tiempo real recibidos:", data);
-
-    // Emitir los datos a todos los clientes conectados
-    this.io.emit("real-time", data);
-  }
-
   async handleToggleProcess(socket, data) {
     console.log(`Comando de proceso recibido de ${socket.id}:`, data);
   
