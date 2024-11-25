@@ -1,4 +1,4 @@
-import app from './app.js';
+import app from './App.js';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { createRoles } from './libs/inicialSetup.js';
