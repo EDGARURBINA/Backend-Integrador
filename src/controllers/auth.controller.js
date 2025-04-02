@@ -108,6 +108,24 @@ export const signUp = async (req, res) => {
     const { username, email, password, id_dispositivos, id, key, roles } = req.body;
 
     try {
+        // Validar longitud mínima para password y key
+        const MIN_PASSWORD_LENGTH = 8;
+        const MIN_KEY_LENGTH = 6;
+
+        // Validación de contraseña
+        if (!password || password.length < MIN_PASSWORD_LENGTH) {
+            return res.status(400).json({ 
+                message: `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.` 
+            });
+        }
+
+        // Validación de key (palabra clave)
+        if (!key || key.length < MIN_KEY_LENGTH) {
+            return res.status(400).json({ 
+                message: `La palabra clave debe tener al menos ${MIN_KEY_LENGTH} caracteres.` 
+            });
+        }
+
         const newUser = new User({
             username,
             email,
