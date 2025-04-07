@@ -5,7 +5,6 @@ import { createRoles } from './libs/inicialSetup.js';
 import addPredefinedQuestions from "./libs/addPredefinedQuestions.js"
 
 
-
 dotenv.config();
 
 console.log(process.env.MONGODB_URI);

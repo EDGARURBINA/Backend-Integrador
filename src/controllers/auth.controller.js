@@ -120,9 +120,9 @@ export const signUp = async (req, res) => {
         }
 
         // Validación de key (palabra clave)
-        if (!key || key.length < MIN_KEY_LENGTH) {
+        if (!key || key.length === 0 || key.some(item => !item.answer || item.answer.length < MIN_KEY_LENGTH)) {
             return res.status(400).json({ 
-                message: `La palabra clave debe tener al menos ${MIN_KEY_LENGTH} caracteres.` 
+                message: `Cada palabra clave debe tener al menos ${MIN_KEY_LENGTH} caracteres.` 
             });
         }
 
