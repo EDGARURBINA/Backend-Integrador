@@ -112,9 +112,10 @@ class MqttService {
   async handleNotificationMessage(msg) {
     try {
       const parsedMessage = JSON.parse(msg.content.toString());
-      if (parsedMessage.alerts) {
-        const alerts = parsedMessage.alerts;
-        console.log("Alertas recibidas:", alerts); 
+      if (parsedMessage.notification) {
+        const alerts = Array.isArray(parsedMessage.notification)
+          ? parsedMessage.notification
+          : [parsedMessage.notification];
 
         for (const alert of alerts) {
           const alertId = {
