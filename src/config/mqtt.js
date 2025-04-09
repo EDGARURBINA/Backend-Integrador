@@ -5,13 +5,7 @@ export const mqttConfig = {
   username: 'blocksolutions-back',
   password: 'leedpees',
   queueHistory: 'history',  
-  queueNotifications: 'notifications',  
-  real_Time_Hour:"real-time-hour",
-  real_Time_Minute:"real-time-minute",
-  real_Time_AirPurity:"real-time-airPurity",
-  real_Time_Humidity:"real-time-humidity",
-  real_Time_Temperature:"real-time-temperature",
-  real_Time_Weight1:"real-time-weight1",
-  real_Time_Weight2:"real-time-weight2",
+  queueAlertas: 'alertas',  
+  real_Time:"real-time",
   reconnectTimeout: 2000
 } 

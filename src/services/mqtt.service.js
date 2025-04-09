@@ -33,22 +33,17 @@ class MqttService {
       this.channel = await this.connection.createChannel();
       const queues = [
         mqttConfig.queueHistory,
-        mqttConfig.queueNotifications,
-        mqttConfig.real_Time_AirPurity,
-        mqttConfig.real_Time_Hour,
-        mqttConfig.real_Time_Humidity,
-        mqttConfig.real_Time_Minute,
-        mqttConfig.real_Time_Temperature,
-        mqttConfig.real_Time_Weight1,
-        mqttConfig.real_Time_Weight2,
+        mqttConfig.queueAlertas,
+        mqttConfig.real_Time
       ];
 
-      // Asegurar que todas las colas existen y sean duraderas
-      for (const queue of queues.slice(2)) {
-        this.channel.consume(queue, (msg) => {
-          this.realTimeHandler(queue, msg);
-        }, { noAck: false });
-      }
+      // Consumir mensajes de colas específicas con funciones dedicadas
+      this.channel.consume(
+        mqttConfig.real_Time,
+        this.realTimeHandler.bind(this),
+        { noAck: false }
+      );
+      
 
       // Consumir mensajes de colas específicas con funciones dedicadas
       this.channel.consume(
@@ -57,8 +52,8 @@ class MqttService {
         { noAck: false }
       );
       this.channel.consume(
-        mqttConfig.queueNotifications,
-        this.handleNotificationMessage.bind(this),
+        mqttConfig.queueAlertas,
+        this.handleAlertsMessage.bind(this),
         { noAck: false }
       );
 
@@ -72,20 +67,12 @@ class MqttService {
   }
 
   // Maneja los datos en tiempo real de los sensores
-  realTimeHandler(queueName, message) {
+  realTimeHandler( message) {
     try {
       const parsedMessage = JSON.parse(message.content.toString());
   
-      // Obtener la última propiedad del objeto `parsedMessage`
-      const lastPropertyKey = Object.keys(parsedMessage).pop();
-      const lastPropertyValue = parsedMessage[lastPropertyKey];
-  
-      if (!lastPropertyKey || !lastPropertyValue) {
-        throw new Error(`El mensaje recibido desde ${queueName} no contiene propiedades válidas.`);
-      }
-  
       // Emitir los datos usando el socketManager con la última propiedad
-      this.socketManager.broadcast(queueName, lastPropertyValue);
+      this.socketManager.broadcast("real-time", parsedMessage.data);
 
       
   
@@ -109,13 +96,13 @@ class MqttService {
   }
 
   // Maneja las notificaciones recibidas y las guarda en la base de datos
-  async handleNotificationMessage(msg) {
+  async handleAlertsMessage(msg) {
     try {
       const parsedMessage = JSON.parse(msg.content.toString());
-      if (parsedMessage.notification) {
-        const alerts = Array.isArray(parsedMessage.notification)
-          ? parsedMessage.notification
-          : [parsedMessage.notification];
+      if (parsedMessage.alerts) {
+        const alerts = Array.isArray(parsedMessage.alerts)
+          ? parsedMessage.alerts
+          : [parsedMessage.alerts];
 
         for (const alert of alerts) {
           const alertId = {

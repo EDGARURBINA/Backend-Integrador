@@ -32,7 +32,7 @@ class SocketManager {
       socket.on("message", (data) => this.handleClientMessage(socket, data));
       socket.on("device", (data) => this.handleDeviceHistory(socket, data)); 
       socket.on("disconnect", () => this.handleDisconnect(socket));
-      socket.on("real-time-data", (data) => this.handleRealTimeData(data));
+      socket.on("real-time", (data) => this.handleRealTimeData(data));
 
     });
   }
@@ -124,14 +124,7 @@ class SocketManager {
                 
             ) {
                 // Transmitir datos a través de WebSocket
-                this.socketManager.broadcast('real-time-data', {
-                    humidity_actual,
-                    temperature_actual,
-                    hours_actual,
-                    minute_actual,
-                    weight,
-                    airPurity
-                });
+                this.socketManager.broadcast('real-time', message.data);
             }
         }
 
